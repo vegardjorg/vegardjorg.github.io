@@ -168,6 +168,12 @@
     code { font: 13px var(--font-mono); background: var(--container); padding: 1px 5px; border-radius: var(--radius); }
 
     .project-body .links { margin-top: 22px; }
+    .built {
+      display: inline-block; align-self: flex-start; margin: 2px 0 4px;
+      font: 500 11px/1 var(--font-mono); letter-spacing: .02em; color: var(--on-surface-variant);
+      border: 1px solid var(--outline-variant); border-radius: var(--radius); padding: 3px 6px;
+    }
+    .project-body > p + .built { margin-top: -8px; }
 
     /* Logo ved overskriften: én variant per tema */
     .project-head h3 { display: flex; align-items: center; gap: 8px; }
@@ -302,18 +308,21 @@
             <span class="code">IN2010</span>
             <h3>Algoritmer og datastrukturer</h3>
             <p>Sortering, søk, heap, trær, hashing og grafer, med visualiseringer du kan styre selv.</p>
+            <span class="built">Built with Claude</span>
             <span class="go">Åpne guiden →</span>
           </a>
           <a class="card" href="https://vegardjorg.github.io/IN2090/">
             <span class="code">IN2090</span>
             <h3>Databaser og datamodellering</h3>
             <p>ER-modellering, relasjonsalgebra, SQL, normalisering, sikkerhet og indekser.</p>
+            <span class="built">Built with Claude</span>
             <span class="go">Åpne guiden →</span>
           </a>
           <a class="card" href="https://vegardjorg.github.io/IN2120/">
             <span class="code">IN2120</span>
             <h3>Informasjonssikkerhet</h3>
             <p>Krypto, PKI, angrep, autentisering, IAM og nettverk, knyttet til eksamensoppgavene H2021–H2025.</p>
+            <span class="built">Built with Claude</span>
             <span class="go">Åpne guiden →</span>
           </a>
         </div>
@@ -339,8 +348,9 @@
             </div>
           </div>
           <div class="project-body">
-            <p>Et koordineringslag rundt Claude Code som kjører et helt prosjekt fra én samtale. Plan og kø ligger i filer som overlever kompaksjon og omstart. Parallelle agenter jobber i hver sin worktree, og ingenting merges før prosjektets egne kontroller har passert.</p>
+            <p>Et koordineringslag rundt Claude Code som kjører et helt prosjekt fra én samtale. Kø, planer og beslutninger ligger i filer, ikke i konteksten, så arbeidet overlever kompaksjon, krasj og omstart. Agentene jobber parallelt i hver sin worktree; ingenting merges før prosjektets egne kontroller er grønne på akkurat den commiten.</p>
             <p>Med Ravenseat sikter jeg på å omsette det jeg lærer på skolen i praksis: programvarearkitektur, arbeidsprosesser i utvikling og sikkerhet.</p>
+            <span class="built">Built with Claude</span>
 
             <div class="strip" id="strip">
             <button class="strip-btn" type="button" id="strip-prev" aria-label="Forrige skjermbilder">‹</button>
@@ -358,39 +368,39 @@
 
             <ul class="specs">
               <li>
-                <h4>Harness</h4>
+                <h4>Isolasjon</h4>
                 <ul>
-                  <li>Hver oppgave får en fersk agent, egen worktree og egen branch</li>
-                  <li>Avhengigheter styrer hva som starter, og merges skjer én om gangen</li>
-                  <li>Feilet kontroll gir en fiksrunde, opptil tre før den blir en beslutning</li>
-                  <li>Ferdigkriteriene låses når arbeidet starter</li>
+                  <li>Én fersk agent per oppgave, med egen worktree, egen branch og et oppdrag skrevet til fil</li>
+                  <li>Eierskap per fil: to spor rører aldri de samme filene samtidig</li>
+                  <li>Avhengigheter styrer rekkefølgen, og merges skjer én om gangen under lås</li>
+                  <li>Rød kontroll gir en fiksrunde, høyst tre, deretter et spørsmål til eieren</li>
                 </ul>
               </li>
               <li>
-                <h4>Vakter</h4>
+                <h4>Fail-closed vakter</h4>
                 <ul>
-                  <li>Hooks blokkerer push og skriving til kontrollfiler fra køagenter</li>
-                  <li>Ny <code>.only</code> stopper merge, slettede tester flagges</li>
-                  <li>Overstyringer går via Claude Codes egen tillatelsesdialog</li>
-                  <li>Red team-tester kjøres i CI på Linux og Windows</li>
+                  <li>Hooks blokkerer push og skriving til kontrollfiler; går vakta tom for tid, blokkerer den</li>
+                  <li>Ny <code>.only</code> stopper merge; slettede tester og tømte asserts flagges</li>
+                  <li>Valgfri hemmelighetsskann av hver commit før merge</li>
+                  <li>Red team-suite i CI på Linux og Windows</li>
                 </ul>
               </li>
               <li>
-                <h4>Sporbarhet og logging</h4>
+                <h4>Bevis, ikke tillit</h4>
                 <ul>
-                  <li>Kontrollresultatet lagres mot commit-SHA, og merge leser kun den posten</li>
-                  <li>Agenten sertifiserer aldri sitt eget arbeid</li>
-                  <li>Rapporter og overleveringer skrives til filer, ikke chatten</li>
-                  <li>Hver svekket innstilling og overstyring logges</li>
+                  <li>Kontrollresultatet bindes til commit-SHA, og merge leser bare den posten</li>
+                  <li>Agenten godkjenner aldri eget arbeid: egne review-agenter etter risikoklasse, også én som prøver å motbevise leveransen</li>
+                  <li>Rapporter, overleveringer og eierbeslutninger skrives til filer, med logg over hver overstyring</li>
+                  <li>Køfilene skrives transaksjonelt med journal, så et krasj midt i en skriving repareres i stedet for å korrumpere</li>
                 </ul>
               </li>
               <li>
-                <h4>Tokenoptimalisering</h4>
+                <h4>Kostnad under oppsyn</h4>
                 <ul>
-                  <li>Automatisk kompaksjon ved 300k i stedet for nær 1M</li>
-                  <li><code>ravenseat cost</code> per oppgave, flagger uvanlig tokenbruk og ineffektive fillesinger</li>
+                  <li>Kompaksjon ved 300k i stedet for nær 1M</li>
+                  <li><code>ravenseat cost</code> per oppgave: flagger uvanlig tokenbruk og unødvendige fillesinger</li>
                   <li>Valgfritt dagsbudsjett stopper nye starter</li>
-                  <li>Venter uten å bruke tokens når ingenting kan kjøre</li>
+                  <li>Når ingenting kan kjøre, venter køen uten å bruke tokens</li>
                 </ul>
               </li>
             </ul>
