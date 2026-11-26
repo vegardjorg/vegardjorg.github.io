@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vegard Cowie Jørgensen</title>
+  <meta name="description" content="Vegard Cowie Jørgensen: datasikkerhet, agentisk koding og interaktive eksamensguider for IN2010, IN2090 og IN2120.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232f5d8a'/%3E%3Ctext x='16' y='22' font-family='Segoe UI,Arial,sans-serif' font-size='15' font-weight='700' text-anchor='middle' fill='%23fff'%3EVCJ%3C/text%3E%3C/svg%3E">
+  <!-- Samme temanøkkel som guidene (samme origin), så valget følger med. -->
+  <script>(function(){try{var t=localStorage.getItem('in-theme')||'light';if(t!=='system')document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
+  <style>
+    /* Fargetokens fra guidene (IN2010/IN2090/IN2120), adaptert fra ravenseat. */
+    :root {
+      color-scheme: light;
+      --primary: #2f5d8a;
+      --on-primary: #ffffff;
+      --primary-container: #d3e3f5;
+      --on-primary-container: #0b2a47;
+      --tertiary: #6a5089;
+      --tertiary-container: #ece0f7;
+      --on-tertiary-container: #2a1446;
+      --surface: #f8f9fb;
+      --on-surface: #1b1d21;
+      --on-surface-variant: #5b616b;
+      --sheet: #ffffff;
+      --container-low: #f3f4f6;
+      --container: #eef0f3;
+      --outline: #808792;
+      --outline-variant: #e1e4e8;
+      --tone-ok: #e2f1e4;     --on-tone-ok: #1e5a2b;
+      --tone-warn: #fbefd2;   --on-tone-warn: #6b4a00;
+      --tone-info: #e3edf7;   --on-tone-info: #1f4a73;
+      --shadow: 0 1px 2px rgba(16,24,40,.06), 0 8px 28px rgba(16,24,40,.07);
+
+      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+      --radius: 4px;
+      --radius-md: 6px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --primary: #8fb8e6;           --on-primary: #0b2a47;
+        --primary-container: #1d4469; --on-primary-container: #d3e3f5;
+        --tertiary: #d0bcf0;
+        --tertiary-container: #4f3770; --on-tertiary-container: #ece0f7;
+        --surface: #181b1f;  --on-surface: #e3e5e9;  --on-surface-variant: #a3a9b3;
+        --sheet: #1c1f24;    --container-low: #141619;  --container: #212429;
+        --outline: #6e7580;  --outline-variant: #2e333a;
+        --tone-ok: #1d3a22;   --on-tone-ok: #bfe3c3;
+        --tone-warn: #3d3014; --on-tone-warn: #f3d9a0;
+        --tone-info: #1e3550; --on-tone-info: #c4dcf5;
+        --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.25);
+      }
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --primary: #8fb8e6;           --on-primary: #0b2a47;
+      --primary-container: #1d4469; --on-primary-container: #d3e3f5;
+      --tertiary: #d0bcf0;
+      --tertiary-container: #4f3770; --on-tertiary-container: #ece0f7;
+      --surface: #181b1f;  --on-surface: #e3e5e9;  --on-surface-variant: #a3a9b3;
+      --sheet: #1c1f24;    --container-low: #141619;  --container: #212429;
+      --outline: #6e7580;  --outline-variant: #2e333a;
+      --tone-ok: #1d3a22;   --on-tone-ok: #bfe3c3;
+      --tone-warn: #3d3014; --on-tone-warn: #f3d9a0;
+      --tone-info: #1e3550; --on-tone-info: #c4dcf5;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.25);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--surface);
+      color: var(--on-surface);
+      font: 16px/1.6 var(--font);
+    }
+    a { color: var(--primary); text-underline-offset: 3px; }
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: var(--radius); }
+    .skip-link { position: absolute; left: -999px; top: 8px; background: var(--primary); color: var(--on-primary); padding: 6px 12px; border-radius: var(--radius); }
+    .skip-link:focus { left: 16px; }
+
+    .wrap { max-width: 860px; margin: 0 auto; padding: 32px 16px 48px; }
+    .sheet {
+      background: var(--sheet);
+      border: 1px solid var(--outline-variant);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow);
+      padding: 44px 48px 36px;
+    }
+    @media (max-width: 640px) {
+      .wrap { padding: 16px 16px 32px; }
+      .sheet { padding: 28px 20px 24px; }
+      .top { flex-wrap: wrap; }
+      .top > div { flex: 1 1 100%; }
+      .theme { order: -1; margin-left: auto; }
+    }
+
+    /* Topp */
+    .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 28px; border-bottom: 3px solid var(--primary); }
+    .mono-tag { display: inline-block; font: 600 12px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--on-surface-variant); margin: 0 0 10px; }
+    h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.15; letter-spacing: -.01em; margin: 0 0 12px; }
+    .lead { margin: 0; max-width: 56ch; color: var(--on-surface-variant); font-size: 17px; }
+    .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      min-height: 36px; padding: 6px 14px;
+      font: 500 14px/1 var(--font);
+      border: 1px solid var(--outline); border-radius: var(--radius);
+      background: var(--sheet); color: var(--on-surface); text-decoration: none; cursor: pointer;
+    }
+    .btn:hover { background: var(--container); }
+    .btn.primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+    .btn.primary:hover { filter: brightness(1.08); }
+    .btn svg { width: 16px; height: 16px; flex: none; }
+    .theme { flex: none; }
+
+    /* Seksjoner */
+    section { margin-top: 36px; }
+    .sechead { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+    h2 { font-size: 20px; margin: 0; }
+    .sechead p { margin: 0; color: var(--on-surface-variant); font-size: 14px; }
+
+    /* Interesser */
+    .interests { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    @media (max-width: 640px) { .interests { grid-template-columns: 1fr; } }
+    .interest { border: 1px solid var(--outline-variant); border-left: 4px solid var(--primary); border-radius: var(--radius-md); padding: 14px 16px; background: var(--container-low); }
+    .interest.sec { border-left-color: var(--tertiary); }
+    .interest h3 { margin: 0 0 4px; font-size: 16px; }
+    .interest p { margin: 0; font-size: 15px; color: var(--on-surface-variant); }
+
+    /* Prosjektkort */
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    @media (max-width: 720px) { .cards { grid-template-columns: 1fr; } }
+    .card {
+      display: flex; flex-direction: column; gap: 6px;
+      border: 1px solid var(--outline-variant); border-radius: var(--radius-md);
+      padding: 16px; text-decoration: none; color: inherit; background: var(--sheet);
+      transition: border-color .15s, transform .15s;
+    }
+    .card:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .card:hover .go { text-decoration: underline; }
+    .code { font: 700 13px/1 var(--font-mono); color: var(--on-primary-container); background: var(--primary-container); padding: 5px 8px; border-radius: var(--radius); align-self: flex-start; }
+    .card h3 { margin: 6px 0 0; font-size: 16px; line-height: 1.35; }
+    .card p { margin: 0; font-size: 14px; color: var(--on-surface-variant); flex: 1; }
+    .go { font-size: 14px; font-weight: 600; color: var(--primary); }
+
+    /* Ravenseat */
+    .project { border: 1px solid var(--outline-variant); border-radius: var(--radius-md); overflow: hidden; }
+    .project-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 20px; background: var(--container-low); border-bottom: 1px solid var(--outline-variant); }
+    .project-head h3 { margin: 0; font-size: 18px; }
+    .project-head p { margin: 2px 0 0; color: var(--on-surface-variant); font-size: 14px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag { font: 600 12px/1 var(--font-mono); padding: 5px 8px; border-radius: var(--radius); background: var(--tone-info); color: var(--on-tone-info); }
+    .project-body { padding: 18px 20px 20px; }
+    .project-body > p { margin: 0 0 16px; }
+
+    .specs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin: 0; padding: 0; list-style: none; }
+    @media (max-width: 640px) { .specs { grid-template-columns: 1fr; } }
+    .specs h4 { margin: 0 0 6px; font-size: 14px; letter-spacing: .02em; color: var(--primary); text-transform: uppercase; font-family: var(--font-mono); }
+    .specs ul { margin: 0; padding-left: 18px; font-size: 15px; }
+    .specs li + li { margin-top: 4px; }
+    code { font: 13px var(--font-mono); background: var(--container); padding: 1px 5px; border-radius: var(--radius); }
+
+    .numbers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 20px; }
+    @media (max-width: 640px) { .numbers { grid-template-columns: 1fr; } }
+    .num { border-radius: var(--radius-md); padding: 12px 14px; background: var(--tone-ok); color: var(--on-tone-ok); }
+    .num b { display: block; font: 700 22px/1.2 var(--font-mono); }
+    .num span { font-size: 13px; }
+    .note { margin: 10px 0 0; font-size: 13px; color: var(--on-surface-variant); }
+
+    footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--outline-variant); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--on-surface-variant); }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Hopp til innhold</a>
+
+  <main id="main" class="wrap">
+    <article class="sheet">
+
+      <header class="top">
+        <div>
+          <p class="mono-tag">vegardjorg.github.io</p>
+          <h1>Vegard Cowie Jørgensen</h1>
+          <p class="lead">Datasikkerhet og agentisk koding. Jeg bygger verktøy som lar KI-agenter jobbe lenge og selvstendig, med kontroller, sporbarhet og kostnad under oppsyn.</p>
+          <div class="links">
+            <a class="btn primary" href="https://github.com/vegardjorg">
+              <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+              GitHub
+            </a>
+            <a class="btn" href="#skole">Skoleprosjekter</a>
+            <a class="btn" href="#ravenseat">Ravenseat</a>
+          </div>
+        </div>
+        <button class="btn theme" id="theme" type="button" aria-label="Bytt mellom lyst og mørkt tema">Mørkt</button>
+      </header>
+
+      <section aria-labelledby="int-h">
+        <div class="sechead"><h2 id="int-h">Interesser</h2></div>
+        <div class="interests">
+          <div class="interest sec">
+            <h3>Datasikkerhet</h3>
+            <p>Tilgangskontroll, angrep og forsvar, kryptografi og risiko. Også sikkerheten rundt KI-agenter: hva de får lov til, og hva som stopper dem når de prøver noe annet.</p>
+          </div>
+          <div class="interest">
+            <h3>Harness og engineering rundt agenter</h3>
+            <p>Oppsettet rundt modellen: egne worktrees per oppgave, kontroller som kjøres uavhengig av agenten, og hooks som håndhever reglene i stedet for å håpe på dem.</p>
+          </div>
+          <div class="interest">
+            <h3>Sporbarhet og logging</h3>
+            <p>Hver leveranse skal kunne spores til en commit, en kontrollkjøring og en beslutning. Rapporter skrives til filer, og hver svekket innstilling logges.</p>
+          </div>
+          <div class="interest">
+            <h3>Tokenoptimalisering</h3>
+            <p>Mindre kontekst per tur, kompaksjon på riktig tidspunkt og kostnad målt per oppgave. Agentarbeid skal være billig nok til å kjøre hele dagen.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="skole" aria-labelledby="skole-h">
+        <div class="sechead"><h2 id="skole-h">Skoleprosjekter</h2><p>Interaktive eksamensguider</p></div>
+        <div class="cards">
+          <a class="card" href="https://vegardjorg.github.io/IN2010/">
+            <span class="code">IN2010</span>
+            <h3>Algoritmer og datastrukturer</h3>
+            <p>Sortering, søk, heap, trær, hashing og grafer, med visualiseringer du kan styre selv.</p>
+            <span class="go">Åpne guiden →</span>
+          </a>
+          <a class="card" href="https://vegardjorg.github.io/IN2090/">
+            <span class="code">IN2090</span>
+            <h3>Databaser og datamodellering</h3>
+            <p>ER-modellering, relasjonsalgebra, SQL, normalisering, sikkerhet og indekser.</p>
+            <span class="go">Åpne guiden →</span>
+          </a>
+          <a class="card" href="https://vegardjorg.github.io/IN2120/">
+            <span class="code">IN2120</span>
+            <h3>Informasjonssikkerhet</h3>
+            <p>Krypto, PKI, angrep, autentisering, IAM og nettverk, knyttet til eksamensoppgavene H2021–H2025.</p>
+            <span class="go">Åpne guiden →</span>
+          </a>
+        </div>
+      </section>
+
+      <section id="ravenseat" aria-labelledby="andre-h">
+        <div class="sechead"><h2 id="andre-h">Andre prosjekter</h2></div>
+        <div class="project">
+          <div class="project-head">
+            <div>
+              <h3>Ravenseat</h3>
+              <p>Engineering-disiplin for Claude Code-agenter. Bevis fremfor tillit.</p>
+            </div>
+            <div class="tags">
+              <span class="tag">Node.js</span>
+              <span class="tag">Claude Code</span>
+              <span class="tag">Git worktrees</span>
+              <span class="tag">MIT</span>
+            </div>
+          </div>
+          <div class="project-body">
+            <p>Et koordineringslag rundt Claude Code som kjører et helt prosjekt fra én samtale. Plan og kø ligger i filer som overlever kompaksjon og omstart. Parallelle agenter jobber i hver sin worktree, og ingenting merges før prosjektets egne kontroller har passert.</p>
+
+            <ul class="specs">
+              <li>
+                <h4>Harness</h4>
+                <ul>
+                  <li>Hver oppgave får en fersk agent, egen worktree og egen branch</li>
+                  <li>Avhengigheter styrer hva som starter, og merges skjer én om gangen</li>
+                  <li>Feilet kontroll gir en fiksrunde, opptil tre før den blir en beslutning</li>
+                  <li>Ferdigkriteriene låses når arbeidet starter</li>
+                </ul>
+              </li>
+              <li>
+                <h4>Vakter</h4>
+                <ul>
+                  <li>Hooks blokkerer push og skriving til kontrollfiler fra køagenter</li>
+                  <li>Ny <code>.only</code> stopper merge, slettede tester flagges</li>
+                  <li>Overstyringer går via Claude Codes egen tillatelsesdialog</li>
+                  <li>Red team-tester kjøres i CI på Linux og Windows</li>
+                </ul>
+              </li>
+              <li>
+                <h4>Sporbarhet og logging</h4>
+                <ul>
+                  <li>Kontrollresultatet lagres mot commit-SHA, og merge leser kun den posten</li>
+                  <li>Agenten sertifiserer aldri sitt eget arbeid</li>
+                  <li>Rapporter og overleveringer skrives til filer, ikke chatten</li>
+                  <li>Hver svekket innstilling og overstyring logges</li>
+                </ul>
+              </li>
+              <li>
+                <h4>Tokenoptimalisering</h4>
+                <ul>
+                  <li>Automatisk kompaksjon ved 300k i stedet for nær 1M</li>
+                  <li><code>ravenseat cost</code> per oppgave, flagger uvanlig tokenbruk og ineffektive fillesinger</li>
+                  <li>Valgfritt dagsbudsjett stopper nye starter</li>
+                  <li>Venter uten å bruke tokens når ingenting kan kjøre</li>
+                </ul>
+              </li>
+            </ul>
+
+            <div class="numbers">
+              <div class="num"><b>464k → 183k</b><span>median kontekst per tur i hovedchatten</span></div>
+              <div class="num"><b>$0.157 → $0.065</b><span>kostnad per tur, kompaksjon ved 300k</span></div>
+              <div class="num"><b>~1 200</b><span>oppgaver fullført på tre uker i ett privat prosjekt</span></div>
+            </div>
+            <p class="note">Målt av én utvikler i to repoer over noen uker, ikke en kontrollert benchmark. Kilde: README og <a href="https://github.com/vegardjorg/ravenseat/blob/main/plugin/docs/costs.md">costs.md</a>.</p>
+
+            <div class="links">
+              <a class="btn primary" href="https://github.com/vegardjorg/ravenseat">Se på GitHub</a>
+              <a class="btn" href="https://github.com/vegardjorg/ravenseat/blob/main/plugin/docs/why-i-built-it.md">Hvorfor jeg bygde det</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <span>© Vegard Cowie Jørgensen</span>
+        <a href="https://github.com/vegardjorg">github.com/vegardjorg</a>
+      </footer>
+    </article>
+  </main>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var btn = document.getElementById('theme');
+      function current() {
+        var t = root.getAttribute('data-theme');
+        if (t) return t;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      function label() { btn.textContent = current() === 'dark' ? 'Lyst' : 'Mørkt'; }
+      btn.addEventListener('click', function () {
+        var next = current() === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('in-theme', next); } catch (e) {}
+        label();
+      });
+      label();
+    })();
+  </script>
+</body>
+</html>
