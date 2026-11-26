@@ -1,6 +1,10 @@
 # Claude Code-verktøy og lokale sesjonsnotater
 .claude/
 
+# Internt arbeidsmateriale – IKKE publisert (vurderinger, planer for senere arbeid).
+# Repoet er offentlig og alt i det serveres på vegardjorg.github.io.
+plan/
+
 # OS / editor
 .DS_Store
 Thumbs.db
