@@ -207,7 +207,7 @@
     .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top left; transition: transform .35s ease, opacity .2s; }
     .thumb:hover img { transform: scale(1.03); }
     .thumb:hover { border-color: var(--primary); }
-    .gallery-hint { margin: -8px 0 18px; font-size: 13px; color: var(--on-surface-variant); }
+    .sec-note { margin: -4px 0 14px; font-size: 15px; color: var(--on-surface-variant); max-width: 64ch; }
 
     /* Visning (lysboks) */
     .viewer {
@@ -302,6 +302,7 @@
 
       <section id="skole" aria-labelledby="skole-h">
         <div class="sechead"><h2 id="skole-h">Skoleprosjekter</h2><p>Interaktive eksamensguider</p></div>
+        <p class="sec-note">Bygget så enkelt som mulig, med ren HTML, CSS og vanilla JavaScript. Ingen rammeverk og ingen byggesteg, så guidene kan hostes rett på GitHub Pages.</p>
         <div class="cards">
           <a class="card" href="https://vegardjorg.github.io/IN2010/">
             <span class="code">IN2010</span>
@@ -359,7 +360,6 @@
             </div>
             <button class="strip-btn" type="button" id="strip-next" aria-label="Neste skjermbilder">›</button>
             </div>
-            <p class="gallery-hint">Trykk på et bilde for å se det stort. Piltaster eller sveip blar, Esc lukker.</p>
 
             <ul class="specs">
               <li>
