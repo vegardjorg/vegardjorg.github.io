@@ -83,6 +83,7 @@
 
     .wrap { max-width: 860px; margin: 0 auto; padding: 32px 16px 48px; }
     .sheet {
+      position: relative;
       background: var(--sheet);
       border: 1px solid var(--outline-variant);
       border-radius: var(--radius-md);
@@ -92,9 +93,6 @@
     @media (max-width: 640px) {
       .wrap { padding: 16px 16px 32px; }
       .sheet { padding: 28px 20px 24px; }
-      .top { flex-wrap: wrap; }
-      .top > div { flex: 1 1 100%; }
-      .theme { order: -1; margin-left: auto; }
     }
 
     /* Topp */
@@ -115,7 +113,23 @@
     .btn.primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
     .btn.primary:hover { filter: brightness(1.08); }
     .btn svg { width: 16px; height: 16px; flex: none; }
-    .theme { flex: none; }
+    /* Temabryter: lite svart/hvitt ikon, måne i lyst tema og sol i mørkt. */
+    .theme {
+      flex: none; display: inline-flex; align-items: center; justify-content: center;
+      position: absolute; top: 14px; right: 14px;
+      width: 32px; height: 32px; padding: 0;
+      border: 0; border-radius: 50%; background: transparent; color: var(--on-surface); cursor: pointer;
+      transition: background .15s;
+    }
+    .theme:hover { background: var(--container); }
+    .theme svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .theme .i-sun { display: none; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .theme .i-moon { display: none; }
+      :root:not([data-theme="light"]) .theme .i-sun { display: block; }
+    }
+    :root[data-theme="dark"] .theme .i-moon { display: none; }
+    :root[data-theme="dark"] .theme .i-sun { display: block; }
 
     /* Seksjoner */
     section { margin-top: 36px; }
@@ -278,7 +292,10 @@
             <a class="btn" href="#ravenseat">Ravenseat</a>
           </div>
         </div>
-        <button class="btn theme" id="theme" type="button" aria-label="Bytt mellom lyst og mørkt tema">Mørkt</button>
+        <button class="theme" id="theme" type="button" aria-label="Bytt til mørkt tema" title="Bytt tema">
+          <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>
+          <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+        </button>
       </header>
 
       <section aria-labelledby="int-h">
@@ -577,7 +594,7 @@
         if (t) return t;
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
-      function label() { btn.textContent = current() === 'dark' ? 'Lyst' : 'Mørkt'; }
+      function label() { btn.setAttribute('aria-label', current() === 'dark' ? 'Bytt til lyst tema' : 'Bytt til mørkt tema'); }
       btn.addEventListener('click', function () {
         var next = current() === 'dark' ? 'light' : 'dark';
         root.setAttribute('data-theme', next);
