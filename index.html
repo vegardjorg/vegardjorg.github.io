@@ -130,6 +130,9 @@
     .interest.sec { border-left-color: var(--tertiary); }
     .interest h3 { margin: 0 0 4px; font-size: 16px; }
     .interest p { margin: 0; font-size: 15px; color: var(--on-surface-variant); }
+    .interest .mini { margin: 0; padding: 0; list-style: none; font-size: 15px; color: var(--on-surface-variant); }
+    .interest .mini li + li { margin-top: 4px; }
+    .interest .mini b { color: var(--on-surface); font-weight: 600; }
 
     /* Prosjektkort */
     .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
@@ -164,12 +167,7 @@
     .specs li + li { margin-top: 4px; }
     code { font: 13px var(--font-mono); background: var(--container); padding: 1px 5px; border-radius: var(--radius); }
 
-    .numbers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 20px; }
-    @media (max-width: 640px) { .numbers { grid-template-columns: 1fr; } }
-    .num { border-radius: var(--radius-md); padding: 12px 14px; background: var(--tone-ok); color: var(--on-tone-ok); }
-    .num b { display: block; font: 700 22px/1.2 var(--font-mono); }
-    .num span { font-size: 13px; }
-    .note { margin: 10px 0 0; font-size: 13px; color: var(--on-surface-variant); }
+    .project-body .links { margin-top: 22px; }
 
     /* Logo ved overskriften: én variant per tema */
     .project-head h3 { display: flex; align-items: center; gap: 8px; }
@@ -283,19 +281,15 @@
         <div class="interests">
           <div class="interest sec">
             <h3>Datasikkerhet</h3>
-            <p>Tilgangskontroll, angrep og forsvar, kryptografi og risiko. Også sikkerheten rundt KI-agenter: hva de får lov til, og hva som stopper dem når de prøver noe annet.</p>
+            <p>Tilgangskontroll, angrep, krypto og risiko. Også sikkerheten rundt KI-agenter.</p>
           </div>
           <div class="interest">
             <h3>Harness og engineering rundt agenter</h3>
-            <p>Oppsettet rundt modellen: egne worktrees per oppgave, kontroller som kjøres uavhengig av agenten, og hooks som håndhever reglene i stedet for å håpe på dem.</p>
-          </div>
-          <div class="interest">
-            <h3>Sporbarhet og logging</h3>
-            <p>Hver leveranse skal kunne spores til en commit, en kontrollkjøring og en beslutning. Rapporter skrives til filer, og hver svekket innstilling logges.</p>
-          </div>
-          <div class="interest">
-            <h3>Tokenoptimalisering</h3>
-            <p>Mindre kontekst per tur, kompaksjon på riktig tidspunkt og kostnad målt per oppgave. Agentarbeid skal være billig nok til å kjøre hele dagen.</p>
+            <ul class="mini">
+              <li><b>Harness:</b> Egen worktree per oppgave. Kontroller agenten ikke styrer selv.</li>
+              <li><b>Sporbarhet og logging:</b> Hver leveranse spores til en commit og en kontrollkjøring.</li>
+              <li><b>Tokenoptimalisering:</b> Mindre kontekst per tur. Kostnad målt per oppgave.</li>
+            </ul>
           </div>
         </div>
       </section>
@@ -401,16 +395,8 @@
               </li>
             </ul>
 
-            <div class="numbers">
-              <div class="num"><b>464k → 183k</b><span>median kontekst per tur i hovedchatten</span></div>
-              <div class="num"><b>$0.157 → $0.065</b><span>kostnad per tur, kompaksjon ved 300k</span></div>
-              <div class="num"><b>~1 200</b><span>oppgaver fullført på tre uker i ett privat prosjekt</span></div>
-            </div>
-            <p class="note">Målt av én utvikler i to repoer over noen uker, ikke en kontrollert benchmark. Kilde: README og <a href="https://github.com/vegardjorg/ravenseat/blob/main/plugin/docs/costs.md">costs.md</a>.</p>
-
             <div class="links">
               <a class="btn primary" href="https://github.com/vegardjorg/ravenseat">Se på GitHub</a>
-              <a class="btn" href="https://github.com/vegardjorg/ravenseat/blob/main/plugin/docs/why-i-built-it.md">Hvorfor jeg bygde det</a>
             </div>
           </div>
         </div>
