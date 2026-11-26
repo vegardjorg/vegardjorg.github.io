@@ -171,6 +171,77 @@
     .num span { font-size: 13px; }
     .note { margin: 10px 0 0; font-size: 13px; color: var(--on-surface-variant); }
 
+    /* Logo ved overskriften: én variant per tema */
+    .project-head h3 { display: flex; align-items: center; gap: 8px; }
+    .logo { height: 1.5em; width: auto; flex: none; }
+    .logo-dark { display: none; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .logo-light { display: none; }
+      :root:not([data-theme="light"]) .logo-dark { display: block; }
+    }
+    :root[data-theme="dark"] .logo-light { display: none; }
+    :root[data-theme="dark"] .logo-dark { display: block; }
+
+    /* Galleri */
+    .gallery { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 22px 0 18px; padding: 0; list-style: none; }
+    .gallery li:first-child { grid-column: span 2; grid-row: span 2; }
+    @media (max-width: 640px) {
+      .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .gallery li:first-child { grid-row: span 1; }
+    }
+    .thumb {
+      display: block; width: 100%; padding: 0; margin: 0; cursor: zoom-in;
+      border: 1px solid var(--outline-variant); border-radius: var(--radius-md);
+      background: var(--container-low); overflow: hidden; aspect-ratio: 16 / 10;
+    }
+    .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top left; transition: transform .35s ease, opacity .2s; }
+    .thumb:hover img { transform: scale(1.03); }
+    .thumb:hover { border-color: var(--primary); }
+    .gallery-hint { margin: -10px 0 18px; font-size: 13px; color: var(--on-surface-variant); }
+
+    /* Visning (lysboks) */
+    .viewer {
+      width: 100vw; height: 100vh; max-width: none; max-height: none; margin: 0; padding: 0;
+      border: 0; background: transparent; color: #e3e5e9; overflow: hidden;
+    }
+    .viewer::backdrop { background: rgba(12, 14, 17, .86); backdrop-filter: blur(3px); }
+    .viewer[open] { display: grid; grid-template-rows: auto 1fr auto; animation: fade .18s ease-out; }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    .v-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; font: 13px var(--font-mono); color: #a3a9b3; }
+    .v-stage { position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; padding: 0 64px; touch-action: pan-y; }
+    .v-stage img {
+      max-width: 100%; max-height: 100%; object-fit: contain; border-radius: var(--radius-md);
+      box-shadow: 0 20px 60px rgba(0,0,0,.45); background: #fff; user-select: none; -webkit-user-drag: none;
+      transition: opacity .15s;
+    }
+    .v-stage img.zoomed { max-width: none; max-height: none; cursor: zoom-out; }
+    .v-stage.zoom { overflow: auto; align-items: flex-start; justify-content: flex-start; }
+    .v-stage img:not(.zoomed) { cursor: zoom-in; }
+    .v-btn {
+      display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px;
+      border: 1px solid rgba(255,255,255,.18); border-radius: 50%;
+      background: rgba(255,255,255,.06); color: #e3e5e9; font: 18px/1 var(--font); cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+    .v-btn:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.35); }
+    .v-btn:focus-visible { outline: 2px solid #8fb8e6; outline-offset: 2px; }
+    .v-prev, .v-next { position: absolute; top: 50%; transform: translateY(-50%); }
+    .v-prev { left: 12px; }
+    .v-next { right: 12px; }
+    .v-cap { margin: 0; padding: 14px 16px 20px; text-align: center; font-size: 14px; color: #c9ced6; }
+    .v-dots { display: flex; justify-content: center; gap: 6px; padding-bottom: 18px; }
+    .v-dot { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 50%; background: rgba(255,255,255,.28); cursor: pointer; }
+    .v-dot[aria-current="true"] { background: #e3e5e9; }
+    @media (max-width: 640px) {
+      .v-stage { padding: 0 8px; }
+      .v-prev, .v-next { top: auto; bottom: -52px; transform: none; }
+      .v-prev { left: 16px; }
+      .v-next { right: 16px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .thumb img, .viewer[open] { transition: none; animation: none; }
+    }
+
     footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--outline-variant); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--on-surface-variant); }
   </style>
 </head>
@@ -248,7 +319,11 @@
         <div class="project">
           <div class="project-head">
             <div>
-              <h3>Ravenseat</h3>
+              <h3>
+                <img class="logo logo-light" src="assets/ravenseat/ravenseat-light.svg" alt="" width="22" height="29">
+                <img class="logo logo-dark" src="assets/ravenseat/ravenseat-dark.svg" alt="" width="22" height="29">
+                Ravenseat
+              </h3>
               <p>Engineering-disiplin for Claude Code-agenter. Bevis fremfor tillit.</p>
             </div>
             <div class="tags">
@@ -260,6 +335,15 @@
           </div>
           <div class="project-body">
             <p>Et koordineringslag rundt Claude Code som kjører et helt prosjekt fra én samtale. Plan og kø ligger i filer som overlever kompaksjon og omstart. Parallelle agenter jobber i hver sin worktree, og ingenting merges før prosjektets egne kontroller har passert.</p>
+
+            <ul class="gallery" id="gallery" aria-label="Skjermbilder fra Ravenseat-tavla">
+              <li><button class="thumb" type="button"><img src="assets/ravenseat/light-01-queue.jpg" width="1440" height="900" loading="lazy" alt="Køen på tavla: kort i kø, under arbeid, til vurdering og bygget, med fokuslinja og neste oppgave"></button></li>
+              <li><button class="thumb" type="button"><img src="assets/ravenseat/light-06-waiting-on-you.jpg" width="1440" height="900" loading="lazy" alt="Venter på deg: eierspørsmål med anbefaling og svarknapp"></button></li>
+              <li><button class="thumb" type="button"><img src="assets/ravenseat/light-03-dependencies.jpg" width="1440" height="900" loading="lazy" alt="Avhengigheter: oppgavekjeder og eierspørsmålene som blokkerer dem"></button></li>
+              <li><button class="thumb" type="button"><img src="assets/ravenseat/light-13-checks.jpg" width="1440" height="900" loading="lazy" alt="Kontroller: sjekkene prosjektet har, og forslag til nye"></button></li>
+              <li><button class="thumb" type="button"><img src="assets/ravenseat/light-04-statistics.jpg" width="1440" height="900" loading="lazy" alt="Statistikk: kostnad per merget endring, prognose og hva tokens går til"></button></li>
+            </ul>
+            <p class="gallery-hint">Trykk på et bilde for å se det stort. Piltaster eller sveip blar, Esc lukker.</p>
 
             <ul class="specs">
               <li>
@@ -321,6 +405,99 @@
       </footer>
     </article>
   </main>
+
+  <dialog class="viewer" id="viewer" aria-label="Bildevisning">
+    <div class="v-bar">
+      <span id="v-count" aria-live="polite"></span>
+      <button class="v-btn" type="button" id="v-close" aria-label="Lukk">✕</button>
+    </div>
+    <div class="v-stage" id="v-stage">
+      <button class="v-btn v-prev" type="button" id="v-prev" aria-label="Forrige bilde">←</button>
+      <img id="v-img" alt="">
+      <button class="v-btn v-next" type="button" id="v-next" aria-label="Neste bilde">→</button>
+    </div>
+    <div>
+      <p class="v-cap" id="v-cap"></p>
+      <div class="v-dots" id="v-dots"></div>
+    </div>
+  </dialog>
+
+  <script>
+    /* Bildevisning: native <dialog> gir fokusfelle, Esc og fokus tilbake ved lukking. */
+    (function () {
+      var thumbs = Array.prototype.slice.call(document.querySelectorAll('#gallery .thumb'));
+      var dlg = document.getElementById('viewer');
+      if (!thumbs.length || !dlg || typeof dlg.showModal !== 'function') return;
+
+      var stage = document.getElementById('v-stage');
+      var img = document.getElementById('v-img');
+      var cap = document.getElementById('v-cap');
+      var count = document.getElementById('v-count');
+      var dotsBox = document.getElementById('v-dots');
+      var items = thumbs.map(function (t) { var i = t.querySelector('img'); return { src: i.getAttribute('src'), alt: i.alt }; });
+      var idx = 0;
+
+      var dots = items.map(function (it, i) {
+        var d = document.createElement('button');
+        d.type = 'button'; d.className = 'v-dot';
+        d.setAttribute('aria-label', 'Bilde ' + (i + 1));
+        d.addEventListener('click', function () { show(i); });
+        dotsBox.appendChild(d);
+        return d;
+      });
+
+      function unzoom() { img.classList.remove('zoomed'); stage.classList.remove('zoom'); }
+
+      function show(i) {
+        idx = (i + items.length) % items.length;
+        unzoom();
+        img.style.opacity = '0';
+        img.onload = function () { img.style.opacity = '1'; };
+        img.src = items[idx].src;
+        img.alt = items[idx].alt;
+        cap.textContent = items[idx].alt;
+        count.textContent = (idx + 1) + ' / ' + items.length;
+        dots.forEach(function (d, j) { d.setAttribute('aria-current', j === idx ? 'true' : 'false'); });
+        // Forhåndslast naboene, så blaingen føles umiddelbar.
+        [idx - 1, idx + 1].forEach(function (j) { new Image().src = items[(j + items.length) % items.length].src; });
+      }
+
+      thumbs.forEach(function (t, i) {
+        t.addEventListener('click', function () { show(i); dlg.showModal(); });
+      });
+      document.getElementById('v-prev').addEventListener('click', function () { show(idx - 1); });
+      document.getElementById('v-next').addEventListener('click', function () { show(idx + 1); });
+      document.getElementById('v-close').addEventListener('click', function () { dlg.close(); });
+
+      // Klikk på bildet zoomer til full oppløsning, klikk på bakgrunnen lukker.
+      img.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var z = !img.classList.contains('zoomed');
+        img.classList.toggle('zoomed', z);
+        stage.classList.toggle('zoom', z);
+      });
+      stage.addEventListener('click', function (e) { if (e.target === stage) dlg.close(); });
+      dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+      dlg.addEventListener('close', unzoom);
+
+      dlg.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowLeft') { e.preventDefault(); show(idx - 1); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); show(idx + 1); }
+        else if (e.key === 'Home') { e.preventDefault(); show(0); }
+        else if (e.key === 'End') { e.preventDefault(); show(items.length - 1); }
+      });
+
+      // Sveip på mobil (ikke mens bildet er zoomet).
+      var x0 = null, y0 = 0;
+      stage.addEventListener('touchstart', function (e) { if (img.classList.contains('zoomed')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+      stage.addEventListener('touchend', function (e) {
+        if (x0 === null) return;
+        var dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) show(idx + (dx < 0 ? 1 : -1));
+        x0 = null;
+      });
+    })();
+  </script>
 
   <script>
     (function () {
