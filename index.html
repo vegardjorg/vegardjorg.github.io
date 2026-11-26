@@ -183,12 +183,22 @@
     :root[data-theme="dark"] .logo-dark { display: block; }
 
     /* Galleri */
-    .gallery { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 18px 0 16px; padding: 0; list-style: none; }
-    @media (max-width: 640px) {
-      /* Én rad som scrolles sidelengs inne i galleriet, ikke på siden. */
-      .gallery { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 38%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; }
-      .gallery li { scroll-snap-align: start; }
+    /* Bildestripe: --n bilder synlige, pilene blar ett bilde om gangen. */
+    .strip { --n: 4; --gap: 8px; display: flex; align-items: center; gap: 8px; margin: 18px 0 16px; }
+    @media (max-width: 720px) { .strip { --n: 3; } }
+    @media (max-width: 480px) { .strip { --n: 2; } }
+    .strip-view { flex: 1; min-width: 0; overflow: hidden; }
+    .gallery { display: flex; gap: var(--gap); margin: 0; padding: 2px 0; list-style: none; transition: transform .35s cubic-bezier(.2,.7,.2,1); }
+    .gallery li { flex: 0 0 calc((100% - (var(--n) - 1) * var(--gap)) / var(--n)); }
+    .strip-btn {
+      flex: none; display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; padding: 0; border-radius: 50%;
+      border: 1px solid var(--outline-variant); background: var(--sheet); color: var(--on-surface-variant);
+      font: 16px/1 var(--font); cursor: pointer; transition: border-color .15s, color .15s, opacity .15s;
     }
+    .strip-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+    .strip-btn:disabled { opacity: .35; cursor: default; }
+    .strip.static .strip-btn { visibility: hidden; }
     .thumb {
       display: block; width: 100%; padding: 0; margin: 0; cursor: zoom-in;
       border: 1px solid var(--outline-variant); border-radius: var(--radius-md);
@@ -336,6 +346,9 @@
           <div class="project-body">
             <p>Et koordineringslag rundt Claude Code som kjører et helt prosjekt fra én samtale. Plan og kø ligger i filer som overlever kompaksjon og omstart. Parallelle agenter jobber i hver sin worktree, og ingenting merges før prosjektets egne kontroller har passert.</p>
 
+            <div class="strip" id="strip">
+            <button class="strip-btn" type="button" id="strip-prev" aria-label="Forrige skjermbilder">‹</button>
+            <div class="strip-view">
             <ul class="gallery" id="gallery" aria-label="Skjermbilder fra Ravenseat-tavla">
               <li><button class="thumb" type="button"><img src="assets/ravenseat/light-01-queue.jpg" width="1440" height="900" loading="lazy" alt="Køen på tavla: kort i kø, under arbeid, til vurdering og bygget, med fokuslinja og neste oppgave"></button></li>
               <li><button class="thumb" type="button"><img src="assets/ravenseat/light-06-waiting-on-you.jpg" width="1440" height="900" loading="lazy" alt="Venter på deg: eierspørsmål med anbefaling og svarknapp"></button></li>
@@ -343,6 +356,9 @@
               <li><button class="thumb" type="button"><img src="assets/ravenseat/light-13-checks.jpg" width="1440" height="900" loading="lazy" alt="Kontroller: sjekkene prosjektet har, og forslag til nye"></button></li>
               <li><button class="thumb" type="button"><img src="assets/ravenseat/light-04-statistics.jpg" width="1440" height="900" loading="lazy" alt="Statistikk: kostnad per merget endring, prognose og hva tokens går til"></button></li>
             </ul>
+            </div>
+            <button class="strip-btn" type="button" id="strip-next" aria-label="Neste skjermbilder">›</button>
+            </div>
             <p class="gallery-hint">Trykk på et bilde for å se det stort. Piltaster eller sveip blar, Esc lukker.</p>
 
             <ul class="specs">
@@ -423,6 +439,57 @@
   </dialog>
 
   <script>
+    /* Bildestripe: blar ett bilde om gangen med pilene, ingen scrollbar. */
+    (function () {
+      var strip = document.getElementById('strip');
+      var list = document.getElementById('gallery');
+      var prev = document.getElementById('strip-prev');
+      var next = document.getElementById('strip-next');
+      if (!strip || !list) return;
+      var items = list.children;
+      var pos = 0;
+
+      function visible() { return parseInt(getComputedStyle(strip).getPropertyValue('--n'), 10) || 1; }
+      function render() {
+        var max = Math.max(0, items.length - visible());
+        pos = Math.min(Math.max(pos, 0), max);
+        var step = items.length > 1 ? items[1].offsetLeft - items[0].offsetLeft : 0;
+        list.style.transform = 'translateX(' + (-pos * step) + 'px)';
+        prev.disabled = pos === 0;
+        next.disabled = pos === max;
+        strip.classList.toggle('static', max === 0);
+        // Bilder utenfor stripa skal ikke kunne tabbes til eller leses opp.
+        Array.prototype.forEach.call(items, function (li, i) {
+          var out = i < pos || i >= pos + visible();
+          li.setAttribute('aria-hidden', out ? 'true' : 'false');
+          li.querySelector('button').tabIndex = out ? -1 : 0;
+        });
+      }
+      prev.addEventListener('click', function () { pos--; render(); });
+      next.addEventListener('click', function () { pos++; render(); });
+      window.addEventListener('resize', render);
+
+      // Sveip på stripa.
+      var x0 = null;
+      strip.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+      strip.addEventListener('touchend', function (e) {
+        if (x0 === null) return;
+        var dx = e.changedTouches[0].clientX - x0;
+        if (Math.abs(dx) > 40) { pos += dx < 0 ? 1 : -1; render(); }
+        x0 = null;
+      });
+
+      // Lysboksen kan be stripa vise et bestemt bilde.
+      strip.showIndex = function (i) {
+        var n = visible();
+        if (i < pos) pos = i; else if (i >= pos + n) pos = i - n + 1;
+        render();
+      };
+      render();
+    })();
+  </script>
+
+  <script>
     /* Bildevisning: native <dialog> gir fokusfelle, Esc og fokus tilbake ved lukking. */
     (function () {
       var thumbs = Array.prototype.slice.call(document.querySelectorAll('#gallery .thumb'));
@@ -478,7 +545,13 @@
       });
       stage.addEventListener('click', function (e) { if (e.target === stage) dlg.close(); });
       dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
-      dlg.addEventListener('close', unzoom);
+      // Ved lukking: vis bildet man sist så på i stripa, og sett fokus på det.
+      dlg.addEventListener('close', function () {
+        unzoom();
+        var strip = document.getElementById('strip');
+        if (strip && strip.showIndex) strip.showIndex(idx);
+        thumbs[idx].focus({ preventScroll: true });
+      });
 
       dlg.addEventListener('keydown', function (e) {
         if (e.key === 'ArrowLeft') { e.preventDefault(); show(idx - 1); }
