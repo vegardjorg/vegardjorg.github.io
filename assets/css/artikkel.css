@@ -13,6 +13,7 @@
   --sheet: #ffffff; --container-low: #f3f4f6; --container: #eef0f3;
   --outline: #808792; --outline-variant: #e1e4e8;
   --tone-info: #e3edf7; --on-tone-info: #1f4a73;
+  --tone-ok: #e2f3ea; --on-tone-ok: #1d5c3f; --tone-ok-kant: #2e9e6b;
   --shadow: 0 1px 2px rgba(16,24,40,.06), 0 8px 28px rgba(16,24,40,.07);
   --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
@@ -27,6 +28,7 @@
     --sheet: #1c1f24; --container-low: #141619; --container: #212429;
     --outline: #6e7580; --outline-variant: #2e333a;
     --tone-info: #1e3550; --on-tone-info: #c4dcf5;
+    --tone-ok: #17352a; --on-tone-ok: #b5e6cc; --tone-ok-kant: #5cc796;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.25);
   }
 }
@@ -38,6 +40,7 @@
   --sheet: #1c1f24; --container-low: #141619; --container: #212429;
   --outline: #6e7580; --outline-variant: #2e333a;
   --tone-info: #1e3550; --on-tone-info: #c4dcf5;
+  --tone-ok: #17352a; --on-tone-ok: #b5e6cc; --tone-ok-kant: #5cc796;
   --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.25);
 }
 
@@ -122,6 +125,11 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
 
 /* Første avsnitt som ingress-start */
 .art-body > p:first-child { font-size: 19.5px; line-height: 1.6; }
+
+/* Er den for meg? */
+.for-meg { margin: 22px 0 0; padding: 14px 18px; background: var(--tone-ok); color: var(--on-tone-ok); border-left: 4px solid var(--tone-ok-kant); border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+.for-meg p { margin: 0; font-size: 16px; line-height: 1.5; }
+.for-meg .for-meg-t { font: 600 12px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; margin: 0 0 8px; }
 
 /* Kort oppsummert */
 .oppsummert { margin: 1.6em 0 1.4em; padding: 18px 22px 8px; background: var(--tone-info); color: var(--on-tone-info); border-left: 4px solid var(--primary); border-radius: 0 var(--radius-md) var(--radius-md) 0; }
