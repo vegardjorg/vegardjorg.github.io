@@ -82,7 +82,8 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
 :root[data-theme="dark"] .theme .i-moon { display: none; }
 
 /* ---------- Artikkelhode ---------- */
-.art-head { max-width: 820px; padding-bottom: 26px; border-bottom: 3px solid var(--primary); }
+.art-head { padding-bottom: 26px; border-bottom: 3px solid var(--primary); }
+.art-head h1, .art-head .dek { max-width: 820px; } /* teksten holder lesbar bredde, linja og boksen følger siden */
 .mono-tag { display: inline-block; font: 600 12px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--on-surface-variant); margin: 0 0 14px; }
 .art-head h1 { font-size: clamp(30px, 5.4vw, 48px); line-height: 1.1; letter-spacing: -.02em; margin: 0 0 16px; text-wrap: balance; }
 .dek { margin: 0 0 22px; font-size: clamp(18px, 2.4vw, 21px); line-height: 1.45; color: var(--on-surface-variant); text-wrap: pretty; }
