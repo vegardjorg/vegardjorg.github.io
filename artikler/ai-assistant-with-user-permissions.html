@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>When the AI may only do what the user may do · Vegard Cowie Jørgensen</title>
+  <meta name="description" content="Lessons from security architecture, prompt injection and red teaming in a cloud-based business system shared by many organizations.">
+  <meta name="author" content="Vegard Cowie Jørgensen">
+  <link rel="canonical" href="https://vegardjorg.github.io/artikler/ai-assistant-with-user-permissions.html">
+  <link rel="alternate" hreflang="nb" href="https://vegardjorg.github.io/artikler/ki-assistent-med-brukerens-tilganger.html">
+  <link rel="alternate" hreflang="en" href="https://vegardjorg.github.io/artikler/ai-assistant-with-user-permissions.html">
+  <link rel="alternate" hreflang="x-default" href="https://vegardjorg.github.io/artikler/ki-assistent-med-brukerens-tilganger.html">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="When the AI may only do what the user may do">
+  <meta property="og:description" content="Lessons from security architecture, prompt injection and red teaming in a cloud-based business system shared by many organizations.">
+  <meta property="og:url" content="https://vegardjorg.github.io/artikler/ai-assistant-with-user-permissions.html">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-11-27">
+  <meta property="article:author" content="Vegard Cowie Jørgensen">
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "Article", "headline": "When the AI may only do what the user may do", "description": "Lessons from security architecture, prompt injection and red teaming in a cloud-based business system shared by many organizations.",
+   "datePublished": "2026-11-27", "inLanguage": "en", "mainEntityOfPage": "https://vegardjorg.github.io/artikler/ai-assistant-with-user-permissions.html",
+   "image": "https://vegardjorg.github.io/assets/portrett.jpg",
+   "author": {"@type": "Person", "name": "Vegard Cowie Jørgensen", "url": "https://vegardjorg.github.io/"}}
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232f5d8a'/%3E%3Ctext x='16' y='22' font-family='Segoe UI,Arial,sans-serif' font-size='15' font-weight='700' text-anchor='middle' fill='%23fff'%3EVCJ%3C/text%3E%3C/svg%3E">
+  <!-- Samme temanøkkel som forsiden og guidene (samme origin). -->
+  <script>(function(){try{var t=localStorage.getItem('in-theme')||'light';if(t!=='system')document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
+  <link rel="stylesheet" href="../assets/css/artikkel.css">
+  <link rel="stylesheet" href="../assets/css/figurer.css">
+</head>
+<body>
+  <a class="skip-link" href="#tekst">Skip to the text</a>
+  <div class="wrap">
+    <div class="masthead">
+      <a class="home" href="../index.html"><img src="../assets/portrett.jpg" width="30" height="30" alt=""><span>Vegard Cowie Jørgensen</span></a>
+      <div class="verktoy">
+      <a class="sprak" href="ki-assistent-med-brukerens-tilganger.html" hreflang="nb" lang="nb" title="Les artikkelen på norsk" aria-label="Les artikkelen på norsk">NO</a>
+      <button class="theme" id="theme" type="button" aria-label="Switch to dark theme" title="Switch theme">
+        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>
+        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+      </button>
+      </div>
+    </div>
+
+    <main class="sheet">
+      <article>
+        <header class="art-head">
+          <p class="mono-tag">Article · Security architecture and AI</p>
+          <h1>When the AI may only do what the user may do</h1>
+          <p class="dek">Lessons from security architecture, prompt injection and red teaming in a cloud-based business system shared by many organizations</p>
+          <div class="byline">
+            <img src="../assets/portrett.jpg" width="52" height="52" alt="Portrait of Vegard Cowie Jørgensen">
+            <div>
+              <span class="navn">Vegard Cowie Jørgensen</span>
+              <span class="meta">Published <time datetime="2026-11-27">27 November 2026</time> · about 27 min read</span>
+            </div>
+          </div>
+        </header>
+
+        <figure class="afig afig-hero" id="fig-forside" data-fig="forside" data-tittel="The model is fooled, the database holds">
+          <div class="fig-flate"><p>A manipulated model asks for all data, but the database returns only what the user has access to, and the other organizations&#x27; data is untouched.</p></div>
+          <figcaption>The model can be fooled. The boundary sits in the database, which answers with the user&#x27;s own permissions.</figcaption>
+        </figure>
+
+        <div class="art-grid">
+          <nav class="toc" aria-label="Contents">
+            <div class="toc-inner">
+              <details open id="toc-d">
+                <summary><span class="toc-t">Contents</span></summary>
+                <ol>
+                  <li><a href="#the-model-is-not-the-security-boundary">The model is not the security boundary</a></li>
+                  <li><a href="#who-i-defend-against">Who I defend against</a></li>
+                  <li><a href="#one-entry-point-for-all-text-generation">One entry point for all text generation</a></li>
+                  <li><a href="#tools-from-menu-to-execution">Tools: from menu to execution</a></li>
+                  <li><a href="#conversation-history-lives-on-the-client">Conversation history lives on the client</a></li>
+                  <li><a href="#prompt-injection">Prompt injection</a></li>
+                  <li><a href="#bedrock-and-data-residency">Bedrock and data residency</a></li>
+                  <li><a href="#classification-and-logging">Classification and logging</a></li>
+                  <li><a href="#sign-in-and-tokens">Sign-in and tokens</a></li>
+                  <li><a href="#cost-and-abuse">Cost and abuse</a></li>
+                  <li><a href="#red-teaming">Red teaming</a></li>
+                  <li><a href="#privacy-and-the-eu-ai-act">Privacy and the EU AI Act</a></li>
+                  <li><a href="#not-everything-needs-a-language-model">Not everything needs a language model</a></li>
+                  <li><a href="#checks-that-catch-the-next-bug">Checks that catch the next bug</a></li>
+                  <li><a href="#what-the-architecture-does-not-solve">What the architecture does not solve</a></li>
+                  <li><a href="#sources">Sources</a></li>
+                </ol>
+              </details>
+            </div>
+          </nav>
+
+          <div class="art-body" id="tekst">
+            <p>An AI assistant in a business system can easily seem like a small miracle. The user asks what is overdue, where a document is, or for help filling in a form. Behind those questions sit cases, documents and personnel data, spread across many organizations that share the same system. At the same time, the assistant is a component that cannot reliably tell instructions from data, and it is allowed to look up exactly this information.</p>
+            <p>Here I describe how I built and tested such an assistant: where I put the security boundary, how I layer the defenses against prompt injection, and how I deliberately try to make the system fail. Many of the most useful lessons came from errors I found in my own assumptions and in the tests that were supposed to catch them.</p>
+            <aside class="oppsummert" aria-labelledby="in-short">
+            <p class="oppsummert-t" id="in-short">In short</p>
+            <ul>
+            <li>The database is the primary authorization boundary. Row-level security in PostgreSQL isolates each organization, and the assistant looks up data with the user's own identity.</li>
+            <li>The model only gets read tools, and every tool call is checked again when it is executed. Writes happen only after the user has confirmed a pre-filled card.</li>
+            <li>All text generation goes through a single internal gateway that owns EU routing, quotas, cost protection and logging.</li>
+            <li>The defenses against prompt injection are layered, and I keep what enforces separate from what merely reduces risk.</li>
+            <li>The boundary is tested at three levels: around 1,800 database tests and more than 45,000 network checks, a simulated compromised model, and red teaming against a real model.</li>
+            </ul>
+            </aside>
+            <h2 id="the-model-is-not-the-security-boundary">The model is not the security boundary</h2>
+            <p>The first decision shaped everything else: the language model must not be what prevents a data leak. Prompt injection is among the most significant attack classes against systems built on language models, and no model is immune.</p>
+            <p>The database is therefore the primary authorization boundary for organization data. Row-level security (RLS) in PostgreSQL isolates each organization, and the access system checks permissions ("can read cases"), not role names ("is a manager"). Roles are bundles of permissions that each organization assembles and can rename. The service layer and the AI gateway enforce the rest: who may use AI, where the text is sent, quotas and logging.</p>
+            <p>RLS does not cover everything. Privileged database functions and service identities bypass the row policies (a <code>SECURITY DEFINER</code> function owned by a role with <code>BYPASSRLS</code> or by the table owner, and the table owner itself when <code>FORCE ROW LEVEL SECURITY</code> is not set), so I treat them as separate control surfaces. Such a function has to check for itself who is calling and which organization the call concerns, and a service identity may only do what it needs.</p>
+            <p>The assistant plugs into this from below. When it looks up data, it does so with the user's own identity, so the database decides what comes back. If a manipulated model response asks for something the user has no access to, it gets the same thing the user would get in the app: nothing.</p>
+            <p>Throughout this text I distinguish between three kinds of defense:</p>
+            <ul>
+            <li><strong>What enforces.</strong> Deterministic controls that hold even if the model obeys the attacker completely: RLS, a permission check on every tool call, residency controls in the code. A breach here is a vulnerability.</li>
+            <li><strong>What reduces risk.</strong> Behavioral defenses that make attacks harder without guaranteeing anything: instructions to the model, wrapping and sanitizing of data, length limits.</li>
+            <li><strong>What detects.</strong> Tests, red teaming and monitoring that show when any of the above is not working.</li>
+            </ul>
+            <figure class="afig" id="fig-tre-vern" data-fig="tre-vern" data-tittel="Three kinds of defense">
+              <div class="fig-flate"><p>Three kinds of defense: controls that enforce, measures that reduce risk, and tests and monitoring that detect.</p></div>
+              <figcaption><span class="fig-nr">Figure 1</span>Only what enforces has to hold when the model obeys the attacker. The rest is defense in depth and alerting.</figcaption>
+            </figure>
+            <h2 id="who-i-defend-against">Who I defend against</h2>
+            <p>The threat model is short on purpose:</p>
+            <div class="tabell"><table>
+            <thead><tr><th scope="col">Actor</th><th scope="col">What they have</th><th scope="col">What has to hold</th></tr></thead><tbody>
+            <tr><th scope="row">Unauthenticated attacker</th><td>Public endpoints</td><td>Authentication, no data without a valid identity</td></tr>
+            <tr><th scope="row">Employee with ordinary access</th><td>Valid account, own organization</td><td>Their permissions, nothing more</td></tr>
+            <tr><th scope="row">Employee who plants instructions in data</th><td>Write access to ordinary fields</td><td>The text stays data for whoever reads it</td></tr>
+            <tr><th scope="row">Administrator in another organization</th><td>Broad access in their own organization</td><td>Isolation between organizations</td></tr>
+            <tr><th scope="row">Attacker with a stolen token or password</th><td>Valid credentials</td><td>Revocation and limited damage</td></tr>
+            <tr><th scope="row">Manipulated or compromised model</th><td>Arbitrary responses and tool proposals</td><td>Checks at execution time and in the database</td></tr>
+            <tr><th scope="row">Developer who misconfigures something</th><td>Legitimate access to code and configuration</td><td>Automated checks in the build pipeline (CI)</td></tr>
+            </tbody></table></div>
+            <p>The threat model does not cover a compromised vendor (cloud, model or database), a compromised operations environment or build pipeline, or someone sitting at an unlocked device. There I rely on vendor agreements, access management for operations and ordinary device security. The security claims below apply within this scope.</p>
+            <h2 id="one-entry-point-for-all-text-generation">One entry point for all text generation</h2>
+            <p>The client holds no key to a model vendor, and an AI call passes through three stages. A serverless function per AI feature receives the message and the identity, checks that the organization has AI enabled, reserves quota and owns the conversation with the model, including the tool lookups. An internal AI gateway, which users cannot reach directly, owns the keys, the choice of route and model, data residency, cost protection and logging. The database enforces permissions as before, without knowing that an AI is asking.</p>
+            <figure class="afig" id="fig-en-inngang" data-fig="en-inngang" data-tittel="One entry point: three stages">
+              <div class="fig-flate"><p>The app never reaches the model directly. The call goes through an AI feature and an internal gateway, and the database enforces permissions.</p></div>
+              <figcaption><span class="fig-nr">Figure 2</span>All text generation goes through one gateway, which owns routing, cost protection and logging.</figcaption>
+            </figure>
+            <p>The gateway knows nothing about the business domain. The assistant, translation and other features use it the same way. A new AI feature inherits residency controls, cost protection and logging without building them itself. An automated check requires every server function that requests text generation for an organization to pass through the shared permission check first.</p>
+            <p>The conversation is not stored on the server, and intermediate results are discarded once the response is delivered. That means a smaller attack surface and less data to manage. The price is that I cannot read conversations back for debugging. I log rich metadata instead.</p>
+            <h2 id="tools-from-menu-to-execution">Tools: from menu to execution</h2>
+            <p>To answer questions about the organization's own data, the model needs tools, that is, functions it can ask to have run. Customer data is not retrieved from a vector database. The tools query the database directly with the user's identity, and the same row policies apply as in the app. In a search over embedded text chunks (embeddings), access would have had to be copied onto every chunk, where it can go stale, and filtering would have had to happen before or after the search, each with its own way of letting matches through or hiding them.</p>
+            <p>Which tools the model gets to see is decided per request from the user's permissions, fetched fresh every time. The permission required for each tool lives in a single shared registry, and a tool missing from it requires a permission no one has and becomes invisible to everyone. A snapshot test makes any change to the menu visible in code review.</p>
+            <p>The menu on its own protects little, though. A manipulated model can ask for a tool it was not offered, send odd arguments or supply an id from another organization. So the call is checked again at execution time, in four stages:</p>
+            <ol>
+            <li><strong>The registry.</strong> The name is looked up in the list of tools the user was offered in this request. Unknown names return an error code to the model, and nothing runs.</li>
+            <li><strong>Authorization.</strong> The list is built from the permissions fetched at the start of this request, not when the conversation began. It is a snapshot that lives for a few seconds. If the user loses a permission in the middle of a request, the fourth stage is what catches it. The row policies read the organization from the token, but look up permissions, profile status and the kill switch in tables on every query.</li>
+            <li><strong>The arguments.</strong> Each tool validates its own arguments: ids must have the right shape, numbers are clamped to an allowed range, free text is truncated, and the number of rows is capped.</li>
+            <li><strong>The database.</strong> The query runs with the user's identity, so RLS applies no matter what the first three stages let through.</li>
+            </ol>
+            <p>The last stage turns the rest into defense in depth. If a bug in the registry or the validation lets a call through, it only gets rows the user could have read anyway.</p>
+            <p>The user's read access sets a ceiling, but it does not say what the assistant needs. An employee may be allowed to open a hundred cases, while a question about what is overdue only needs title, due date and status. Each tool is built for one task and fetches only the fields that task needs, never whole rows, with a cap on the number of rows. That gives the model less to repeat incorrectly, less untrusted text to be steered by, and less information sitting with the vendor.</p>
+            <p>The most sensitive areas, those bordering on special categories of personal data, have no tools at all. Where insight is needed, I provide aggregates and status instead of free text, and an aggregate over a small group is withheld below a minimum group size, so that a single aggregate does not single out individuals. Combining several aggregates is covered under semantic leakage.</p>
+            <p>Some answers should not be phrased by a model either. If the question concerns something urgent where bad advice can have safety consequences, the assistant does not improvise. It shows the source and the relevant contact information as a card, and the critical information is rendered deterministically from the data.</p>
+            <p>Here is the full path for a single request:</p>
+            <figure class="afig" id="fig-verktoykall" data-fig="verktoykall" data-tittel="The tool call is checked four times">
+              <div class="fig-flate"><p>The model can only ask for tool calls. The registry, the authorization, the argument check and the database decide, and the database stops whatever the others let through.</p></div>
+              <figcaption><span class="fig-nr">Figure 3</span>The model proposes, everything else decides. The solid lines are controlled code, and the dashed ones are the model&#x27;s wishes.</figcaption>
+            </figure>
+            <h2 id="conversation-history-lives-on-the-client">Conversation history lives on the client</h2>
+            <p>When the server does not store the conversation, the client has to hold it. Picture an employee who asks about something they have access to, gets the answer, and then loses that access. If the old history is sent along with the next question, the model can repeat the information without a new database lookup. RLS does not fail, but the database is not asked again.</p>
+            <p>The history lives only in memory on the device, never on disk, in a cache or in the database, and it disappears when the app closes. It is bound to the person in the active organization. On logout, a new user on the same device or a switch of organization, the conversation is cleared, and a response in flight is aborted so it does not land with the wrong person.</p>
+            <p>A permission change in the middle of a conversation within the same organization does not clear the history. The user has already seen the information, the conversation is short-lived, and clearing it would require the client to track permissions in real time. I chose data minimization and a short lifetime over immediate revocation of what has already been shown. New lookups always run against the permissions as they are now.</p>
+            <p>The server does not trust the history either. It is accepted only as plain text from two allowed senders, in a limited amount, and the last message must be the user's. Tool calls and tool results are built only on the server, within a single request. A forged history cannot smuggle in tool blocks. Invented "earlier answers" grant no new access.</p>
+            <h2 id="prompt-injection">Prompt injection</h2>
+            <p>Prompt injection is a family of attacks in which text the attacker controls ends up in the model's context and is read as an instruction. There are two ways in: the user's own message (direct) and everything the tools fetch from the database (indirect). The NCSC has pointed out that this is different from SQL injection. A database can separate code from data with parameterized queries, while a language model has no equivalent hard boundary.</p>
+            <h3 id="the-confused-deputy">The confused deputy</h3>
+            <p>The indirect path is the most dangerous, because the attacker and the person asking need not be the same person. Employee A, with limited access, writes an instruction into an ordinary field, for example the description of a case. Employee B, who has broader access, asks the assistant something that makes it read that field. The assistant is now acting with B's rights, but partly on A's instruction. It is a variant of the classic "confused deputy" problem.</p>
+            <figure class="afig" id="fig-stedfortreder" data-fig="stedfortreder" data-tittel="The confused deputy">
+              <div class="fig-flate"><p>An employee with narrow access plants an instruction in a field. A colleague with broad access asks the assistant, which reads the field, but anything to be written becomes a draft the colleague must confirm.</p></div>
+              <figcaption><span class="fig-nr">Figure 4</span>Indirect injection: everything is authorized for B, so the question is whether the action is what B actually wanted.</figcaption>
+            </figure>
+            <p>The database does not help much here, because everything that happens is authorized for B. The question is whether the action matches what B wanted. I address it with three things: the tools only read, the model has few ways out, and anything that changes something goes through a human who sees the proposal before it happens.</p>
+            <h3 id="what-enforces">What enforces</h3>
+            <p>Simon Willison calls the combination of access to private data, exposure to untrusted content and a way out "the lethal trifecta". The assistant needs the first two to be useful, so I remove the third. The tools read, there is no web search or other outbound call, and the model cannot create links or images. It points only with reference markers the server has given it through the tools, and the client translates only such markers against its own route table. An invented marker does not become a link. The client does not render images either, so an image URL cannot be used for zero-click exfiltration. The response is rendered with the app's own components from a small, known text format, never as HTML or as Markdown with links, so a URL the model writes stays text.</p>
+            <figure class="afig" id="fig-trekant" data-fig="trekant" data-tittel="The lethal trifecta, broken">
+              <div class="fig-flate"><p>Leakage requires private data, untrusted content and a way out. Here the way out is removed: no links, images or web calls from the model.</p></div>
+              <figcaption><span class="fig-nr">Figure 5</span>The assistant needs the first two. That is why the third is removed.</figcaption>
+            </figure>
+            <p>The architecture removes the model's direct exfiltration channels. Indirect relaying through the user or ordinary workflows has to be handled separately. The assistant could, for example, suggest that something be entered into a form others can read, or phrase an answer that leads the user to pass something on.</p>
+            <p>The assistant does not write on its own either. A write action becomes a draft card with pre-filled fields that the user can edit and must confirm, and the write itself goes through the same paths as a manually completed form, with the same permission check and audit trail. The write is built only from the fields the card shows, plus values the client sets itself, such as organization and timestamp. The model cannot attach hidden parameters. Each action type can be switched off centrally. A user who confirms without reading is a real residual risk, but the action cannot exceed the user's own access.</p>
+            <p>Injected text can also pose as the CEO, a regulator or the system itself. That changes nothing in the database, where rights follow from who is asking.</p>
+            <h3 id="what-reduces-risk">What reduces risk</h3>
+            <p>The rest of the defenses make attacks harder without guaranteeing anything. For each measure, I have written down what it does not protect against.</p>
+            <p>Instructions come only from the system. The user's text and tool results are marked as data, and the model is told not to follow instructions found in them. The behavioral rules (data is not instructions, the instructions are not disclosed, no role is adopted from data, claimed authority is reported with its source) sit in a layer owned by the code. That way they survive someone adjusting the part of the prompt that can be edited in an admin panel. This lowers the success rate of naive attempts, but a model can still be talked into things.</p>
+            <p>Data is placed in delimited sections with markers. In an internal review I found that the markers were not neutralized inside the data itself. A text containing a closing marker could end the section early and make the rest look like an instruction. The fix lives in the shared sanitizer, and every AI feature got the protection at the same time. Even so, the wrapping does nothing against persuasive text that stays inside the section.</p>
+            <p>Invisible characters (zero-width, directional, tag and control characters) are stripped from user messages and tool data. This does not catch visible text, homoglyphs or encodings such as base64, and some of these characters have legitimate uses in certain languages.</p>
+            <p>Messages, tool results, history and the number of tool rounds are capped, and truncation happens with a clear marker and the most important content first. This limits attacks that drown the instructions in text, and cost attacks via huge fields. The system's own instructions are capped as well, and because truncation there would happen silently, the code writes a warning to the log before the cap is reached.</p>
+            <p>Every free-text field a tool returns is a possible channel for indirect injection. I map which fields the tools read, keep the sensitive ones out, and pass the rest through wrapping, stripping and truncation. Where possible, the server builds the most important information (key figures, source documents, contact information, suggested actions) as cards from the tool results, so a manipulated model has less to alter.</p>
+            <p>The system instructions must not contain anything that does harm if it leaks: no keys, no one else's data, no backdoors.</p>
+            <h2 id="bedrock-and-data-residency">Bedrock and data residency</h2>
+            <p>I chose AWS Bedrock because it offers access to current models in EU regions, with an account setting for data retention (the <code>none</code> mode) under which requests and responses are not stored by the vendor. The identity the gateway uses may only invoke models, not change retention or logging settings. It therefore cannot turn on model invocation logging (off by default), which could otherwise store both inputs and responses in the account. The keys are kept as secrets in the server environment.</p>
+            <p>An EU endpoint does not by itself mean inference happens in the EU. Bedrock distinguishes between calls to a model in a single region and calls through an inference profile that can route to other regions. A geographic profile stays within its geography, while a global profile can send the call anywhere. Where the text is processed depends on both the endpoint and the model id. I allow only regional model ids or EU profiles, and only regions in the EU/EEA. Some regions whose names start with "eu-" are outside the EEA (London and Zurich, for example) and are kept off the list.</p>
+            <p>Routing can be changed from an admin panel, and a residency guarantee that lives only in configuration can be broken by a typo. So before every call, the gateway checks that the base URL in the route configuration is a known EU host in strict form, with no path or parameters of its own that could steer the call toward another API on the same host (the code appends the path for the model call itself). It also checks that the model is on an allowlist of version-pinned models confirmed to run without retention, and that the request does not ask for vendor features that store content. A rejection returns a generic error code.</p>
+            <h3 id="a-flag-is-not-a-control">A flag is not a control</h3>
+            <p>An internal security review showed that the residency control let tasks involving personal data through to routes marked "EU", but the mark was just a field in a table. A fallback route without an explicit address would have fallen back to the vendor's global endpoint, while still being marked EU and with the log saying "eu".</p>
+            <p>Now a route counts as EU only when the same check in the code approves its actual address. If no route remains, the gateway refuses hard and alerts operations instead of silently falling back to something less strict. The same rule is enforced when routes are written to the database, so the error is caught both on the way in and at the point of use.</p>
+            <figure class="afig" id="fig-flagg" data-fig="flagg" data-tittel="A flag is not a control">
+              <div class="fig-flate"><p>Before, the system trusted an EU mark in a table. Now the code checks the actual address, and without an approved route the call is rejected and operations are alerted.</p></div>
+              <figcaption><span class="fig-nr">Figure 6</span>A mark in a table is a claim. The check in the code decides whether the route is actually EU.</figcaption>
+            </figure>
+            <h3 id="when-the-model-changes">When the model changes</h3>
+            <p>Model ids are version-pinned. A new model or version is put into use only once it has been added to the allowlist along with a test, the red team suite has been rerun, and retention and residency have been assessed for that specific model. Vendors change their terms and offerings over time, so I review the list regularly.</p>
+            <h2 id="classification-and-logging">Classification and logging</h2>
+            <p>Each AI feature has a privacy class that determines whether its content may be logged and whether the residency requirement applies. What matters most is which way the default points. A feature nobody has classified is treated as the strictest class: its content is not logged, and it may only use approved EU routes. "No personal data" has to be chosen and justified, and a catalog-driven test requires every feature with that class to appear on a list with a justification.</p>
+            <p>Every model call is logged with task, model, region, status, duration, usage and a correlation id that ties together the rounds within one user message. Content is logged only for features without personal data, and the rule applies to everything derived from the content: raw input, the prompt and the model's response. I test it against what is actually written, not just against the column names.</p>
+            <p>Metadata can also be personal data. Task type, timestamp, user reference and organization can together reveal a lot without a single sentence being stored. I treat the AI log as a record of personal data: it is used only for operations, cost and abuse detection, only the people who operate the platform can read it, and the retention period comes from the register of legal values.</p>
+            <p>The log has no column of its own for the organization. Usage per organization is counted in separate counters scoped to each organization, so the platform log does not become a way around the isolation between tenants.</p>
+            <p>Errors are mapped to fixed codes before they leave the system, and secrets are not logged. Data changes write an audit event via database triggers, also when the change followed an AI suggestion, independently of the service logic and without free text.</p>
+            <h2 id="sign-in-and-tokens">Sign-in and tokens</h2>
+            <p>When security rests on the user's identity, sign-in becomes part of AI security. A stolen token does not give the model more than the user has, but it gives the attacker everything the user has.</p>
+            <p>A rate limit per IP address does little against password spraying from many addresses. Failed sign-ins feed into monitoring, and I prefer progressive throttling, CAPTCHA and two-factor authentication over locking accounts, because account lockout hands the attacker a button for locking others out. Administrators use two-factor authentication, and critical actions require fresh confirmation.</p>
+            <p>A signed access token is valid until it expires, and logging out or changing a password does not automatically make it stop working against the database. Whatever is in the token follows the token's lifetime. That includes which organization the user is signed in to, so switching organization requires a new token. Permissions, on the other hand, are not in the token. The row policies look them up in tables on every query, along with whether the profile is active and whether the kill switch has been pulled, so a removed permission or a deactivated user takes effect on the live token. The access token lifetime is a deliberate choice, and where the organization or the user has set a session limit, the database also looks up the session on every call and rejects the token when the session is gone or too old. The user and the organization also have a kill switch that cuts off access immediately.</p>
+            <p>I test logout, expiry and deactivation with real tokens from the ordinary sign-in flow: sign in, perform the action, try the old token again.</p>
+            <h2 id="cost-and-abuse">Cost and abuse</h2>
+            <p>AI costs money per call, and a loop that gets out of control can cost a lot before anyone notices. Every request has caps on length, tool rounds, response size and time. Every user and every organization has caps that are checked in the database before the model is called, and the managed service has monthly quotas with a soft warning before the hard stop. The number of new organizations per unit of time is capped too, so throwaway accounts cannot burn through resources on trial periods.</p>
+            <p>Quota is reserved atomically before the call, with a single conditional update that succeeds only if there is room, and the per-organization cap is serialized with a lock. Two concurrent messages therefore cannot both pass before the counter is updated. Quota is charged per user message, because one message can lead to several model rounds, and "X calls per month" would otherwise mean far fewer conversations than the customer thinks. Rounds, tokens and price are tracked separately in the log. In generic form, the reservation looks like this:</p>
+            <pre class="kode"><code class="lang-sql">-- Reserve one unit. The update only happens if the counter is below the cap.
+            insert into usage_counter (tenant_id, period, used)
+            values (:tenant_id, :period, 1)
+            on conflict (tenant_id, period) do update
+               set used = usage_counter.used + 1
+             where usage_counter.used &lt; :quota
+            returning used;
+            -- No row returned: the cap is reached, and the model is not called.</code></pre>
+            <p>On top of this sits an automatic emergency stop (circuit breaker). A scheduled job compares total usage against caps, budget and previous peak days, stops all AI on unusual usage until a human reopens it, and alerts operations. The per-organization caps are set well below the level that trips the circuit breaker, so a single customer cannot shut off AI for the others. The circuit breaker is the last safety net against systemic failures and is not an absolute cost ceiling, because costs can accrue between two runs. If the user drops the connection, the call to the model is aborted where the platform and the vendor support it.</p>
+            <p>Every layer has a deliberate choice between fail open and fail closed, and when a defense cannot do its job, it has to say so with a log line and an alert that describes what is happening. That applies to the counting itself as well. A circuit breaker that counts log rows is blind the moment log writes fail, so a row that cannot be written must itself be treated as an alarm.</p>
+            <h2 id="red-teaming">Red teaming</h2>
+            <h3 id="type-of-failure-and-severity-are-two-different-things">Type of failure and severity are two different things</h3>
+            <p>Boundary tests ask whether the attacker can get data they have no right to, even if the model obeys completely. Behavioral tests ask whether the model behaved as it should.</p>
+            <p>The type of failure still does not tell the whole story about how severe it is. An assistant that answers like a pirate is a behavioral failure with low severity. Bad advice with safety consequences, or an incorrect status message saying a required check has been completed, does not break any access control either, but it can be critical, because integrity weighs as much as confidentiality. A boundary breach is always critical, but a behavioral failure can be too, and then it blocks a release in the same way.</p>
+            <p>I weight threats by both severity and likelihood. Data leakage across organizations is the most severe, but unlikely when the boundary sits in the database. Most likely is a colleague who writes an instruction to answer like a pirate in a field the assistant often reads. No data leaks, but the product looks manipulable, so the tests cover that too.</p>
+            <h3 id="three-levels-of-testing">Three levels of testing</h3>
+            <p>The oracle that decides whether a test passed can be deterministic (a specific string in the response or not) even though the outcome varies from run to run when the attack is sent to a real model. That is why I test the boundary at three levels:</p>
+            <ol>
+            <li>Direct authorization tests. The database and the API are called without a model: unauthenticated, as another organization, with a deactivated account. What gets tested is derived from the database catalog, so new tables and functions are included automatically.</li>
+            <li>A simulated compromised model. Instead of trying to get a real model to do something forbidden, I have a simulated model try every time: ask for tools it was not given, send invalid arguments, supply ids from another organization. This is the strongest test of the architecture, because it does not depend on the attack succeeding against the model.</li>
+            <li>Red teaming with a real model. The attack corpus is run against the assistant to see how the model actually behaves. It says something about the behavioral defenses under the test conditions and does not prove what is impossible.</li>
+            </ol>
+            <figure class="afig" id="fig-testnivaer" data-fig="testnivaer" data-tittel="Three levels of testing">
+              <div class="fig-flate"><p>Three levels of testing: authorization tests without a model, a simulated hostile model, and red teaming against a real model.</p></div>
+              <figcaption><span class="fig-nr">Figure 7</span>The bottom two levels test the architecture no matter what the model does. The top one shows how the model actually behaves.</figcaption>
+            </figure>
+            <p>The attack categories are anchored in publicly known techniques, including the OWASP list for LLM applications. I keep the concrete test prompts out of this text.</p>
+            <p>To give a sense of scale: the boundary is covered by around 1,800 automated database tests, and the network-facing tests have so far run more than 45,000 checks as an unauthenticated user, as a user with narrow access and across organizations. The corpus against the real model has 30 scenarios in 12 attack classes, and no canary token has leaked in any run.</p>
+            <h3 id="canary-tokens-and-other-oracles">Canary tokens and other oracles</h3>
+            <p>Canary tokens are unique strings that cannot be guessed. They are planted in protected data in synthetic test organizations: in sensitive fields and in a neighboring organization. The attacks ask for exactly these. If a canary token shows up anywhere in the response, that is a confirmed boundary breach, and the oracle normalizes the response first. A canary token split by invisible characters or encoded is found as well. The absence of a canary token, however, does not prove that nothing leaked, because the model may have summarized or paraphrased the content.</p>
+            <p>Instruction extraction is caught the same way, with a fixed, harmless marker in the instructions that must not appear in any response. For behavior, pattern oracles look for a URL in the response, an order issued in someone's name, a persona, or a safety recommendation the model phrased on its own instead of taking it from the data. When a non-critical test fails, a model can write a short explanation for the test report, but inputs and outputs are checked for canary tokens first, and a boundary breach is never sent to a model for assessment.</p>
+            <h3 id="where-it-runs">Where it runs</h3>
+            <p>The red team does not run against production or with real data. The test organizations are permanent, clearly labeled and synthetic, and a secret that exists only in the test environment prevents the test against the assistant from running anywhere else. An automated security scanner tests the network surfaces as an unauthenticated user and as an administrator in another organization. Destructive tests run only against a short-lived local database.</p>
+            <p>Model responses are not stored, only the verdict. The tests against a real model run after changes to the AI surface, on model changes and on a fixed schedule, because behavior can change silently even behind a version-pinned model id. The deterministic tests run every time the database changes. Confirmed findings become regression tests.</p>
+            <h3 id="the-tests-have-to-be-tested">The tests have to be tested</h3>
+            <p>Several of the most important lessons were about the tests. One test forbade a specific piece of contact information in the response, while the policy requires it to appear there verbatim. The false red undermined trust in the test overview just as much as a false green would have.</p>
+            <p>In a local environment, test users can lack an organization membership, and then every access check denies trivially, so the tests look clean without testing anything. The destructive tests have a positive control that checks that the legitimate action succeeds.</p>
+            <p>Once, a "critical" finding was an error code that happened to appear as digits in a timestamp. Since then I verify every critical finding before treating it as real. When the response gets a new channel, for example a new card type, the leak check has to cover it in the same change.</p>
+            <h2 id="privacy-and-the-eu-ai-act">Privacy and the EU AI Act</h2>
+            <p>The EU AI Act is being phased in. In the EU, the prohibitions in art. 5 have applied since February 2025, and the transparency obligations in art. 50 have applied since August 2026. Norway's implementation is in progress, and the GDPR applies regardless. I built to the transparency obligations from the start, because it was cheap then and expensive to retrofit: the assistant states clearly that it is an AI, and write actions have a human in the loop.</p>
+            <p>Some boundaries are product choices that go further than the law requires. AI must not evaluate or rank individual employees, and there is no emotion or sentiment analysis of employees' speech or text. Art. 5 prohibits emotion recognition in the workplace, and the regulation sets strict requirements for more of this area, but I have chosen to keep the whole area out, even where it could have been lawful with the right documentation.</p>
+            <p>Human approval does not document compliance on its own. The technical part has to be accompanied by a sub-processor chain, a record of processing activities and an impact assessment.</p>
+            <h2 id="not-everything-needs-a-language-model">Not everything needs a language model</h2>
+            <p>A problem that can be described with rules is one I solve best without a model: scheduling by fixed criteria, calculations, deadlines and a voice-driven registration that interprets what the user says step by step. A deterministic solution gives the same answer for the same input, has no per-call model cost, is not exposed to prompt injection and is easier to test. When the voice control did not understand users well enough, I measured what they actually said and made the interpretation more tolerant, instead of adding a model.</p>
+            <h2 id="checks-that-catch-the-next-bug">Checks that catch the next bug</h2>
+            <p>I turn most lessons into automated checks. An access rule is tested against the database where it is enforced, never against a hand-written copy in a test double. When I find a bug, I ask how the next bug of the same kind will turn red. A missing permission check in one AI feature became a check that requires it in all of them. For patterns that cannot be fixed all at once, a check counts the occurrences and only accepts that the number goes down.</p>
+            <p>A security test counts as done only once I have seen it fail against a deliberately broken state, and the checks in the build pipeline have self-tests with sabotaged copies. A test that attempts the action carries more weight than one that scans the source for a pattern. Before a new security-critical surface goes into use, a separate AI agent with its own context reviews it, and it has to prove each finding with a failing test. That gives an independent reading of the code, but it does not replace an external, human security audit.</p>
+            <p>I have checked every security claim in this text against the code. That a log lacks a column for the organization does not mean it cannot be linked to an organization, and "one entry point" has to hold for every single call.</p>
+            <h2 id="what-the-architecture-does-not-solve">What the architecture does not solve</h2>
+            <p>The architecture moves a lot of risk from the model to controls that can be tested. Some risk still remains in any system that gives a language model access to organization data.</p>
+            <ul>
+            <li>Hallucinations. A model can state something wrong with great confidence, even when the data is correct. Cards built from the data and references to the source reduce the problem without eliminating it.</li>
+            <li>Authorized misuse. A user with legitimate access can find and combine what they are allowed to see, faster than before. The access control sees nothing wrong. Narrow tools slow this down, but what the user is allowed to see, they can still ask for.</li>
+            <li>Leakage after legitimate disclosure. What has been shown can be copied, photographed or forwarded.</li>
+            <li>Semantic leakage. A response can reveal something without repeating it: an aggregate, a paraphrase or a hint. Two aggregates over groups that differ by one person can be subtracted from each other even if both are above the minimum group size. Canary tokens and pattern oracles only see what they recognize.</li>
+            <li>Vendor risk. The model and cloud vendors can change behavior, terms or offerings, or be compromised themselves. Version pinning, agreements and regular reassessment limit the risk, but code cannot enforce it away.</li>
+            </ul>
+            <p>The order has been the same from the start: the boundary and the control first, then the feature. That costs time, but it has meant that the findings from red teaming and reviews have mostly concerned the defense in depth, not the primary boundary.</p>
+            <h2 id="sources">Sources</h2>
+            <ul>
+            <li>OWASP GenAI Security Project: <em>OWASP Top 10 for LLM Applications</em>. <a href="https://genai.owasp.org/">genai.owasp.org/</a></li>
+            <li>NCSC (UK): <em>Prompt injection is not SQL injection (it may be worse)</em> (December 2025). <a href="https://www.ncsc.gov.uk/blog-post/prompt-injection-is-not-sql-injection">www.ncsc.gov.uk/blog-post/prompt-injection-is-not-sql-injection</a></li>
+            <li>Simon Willison: <em>The lethal trifecta for AI agents: private data, untrusted content, and external communication</em> (June 2025). <a href="https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/">simonwillison.net/2025/Jun/16/the-lethal-trifecta/</a></li>
+            <li>PostgreSQL documentation: <em>Row Security Policies</em>. <a href="https://www.postgresql.org/docs/current/ddl-rowsecurity.html">www.postgresql.org/docs/current/ddl-rowsecurity.html</a></li>
+            <li>AWS documentation for Bedrock: <em>Cross-Region inference</em>. <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html">docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html</a></li>
+            <li>AWS documentation for Bedrock: <em>Data retention</em>, <em>Data protection</em> and <em>Model invocation logging</em>. <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html">docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html</a>, <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/data-protection.html">docs.aws.amazon.com/bedrock/latest/userguide/data-protection.html</a> and <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html">docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html</a></li>
+            <li>General Data Protection Regulation (GDPR), Regulation (EU) 2016/679. <a href="https://eur-lex.europa.eu/eli/reg/2016/679/oj">eur-lex.europa.eu/eli/reg/2016/679/oj</a></li>
+            <li>EU AI Act, Regulation (EU) 2024/1689. <a href="https://eur-lex.europa.eu/eli/reg/2024/1689/oj">eur-lex.europa.eu/eli/reg/2024/1689/oj</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <footer class="art-foot">
+          <img src="../assets/portrett.jpg" width="72" height="72" alt="">
+          <div>
+            <span class="navn">Vegard Cowie Jørgensen</span>
+            <p>Computer security and agentic coding. I build tools that let AI agents work for long stretches on their own, with controls, traceability and cost kept in view.</p>
+            <p class="lenker"><a href="../index.html">Back to the front page</a> · <a href="https://github.com/vegardjorg">GitHub</a></p>
+          </div>
+        </footer>
+      </article>
+    </main>
+    <p class="site-foot">Published <time datetime="2026-11-27">27 November 2026</time></p>
+  </div>
+
+  <script src="../assets/js/fig-motor.js"></script>
+  <script src="../assets/js/fig-artikkel-ai.js"></script>
+  <script>
+    FIG.start();
+
+    /* Innholdsfortegnelse: åpen og fast på bred skjerm, lukket på smal. Marker kapitlet man leser. */
+    (function () {
+      var d = document.getElementById('toc-d'), mq = window.matchMedia('(max-width: 1000px)');
+      function sett() { d.open = !mq.matches; }
+      sett(); if (mq.addEventListener) mq.addEventListener('change', sett);
+      d.querySelector('summary').addEventListener('click', function (e) { if (!mq.matches) e.preventDefault(); });
+      d.addEventListener('click', function (e) { if (e.target.closest('a') && mq.matches) d.open = false; });
+      var lenker = {}, h2 = document.querySelectorAll('.art-body h2[id]');
+      Array.prototype.forEach.call(d.querySelectorAll('a'), function (a) { lenker[a.getAttribute('href').slice(1)] = a; });
+      function oppdater() {
+        var gjeldende = null;
+        Array.prototype.forEach.call(h2, function (h) { if (h.getBoundingClientRect().top < 140) gjeldende = h.id; });
+        Object.keys(lenker).forEach(function (k) { lenker[k].setAttribute('aria-current', k === gjeldende ? 'true' : 'false'); });
+      }
+      var venter = false;
+      window.addEventListener('scroll', function () { if (!venter) { venter = true; requestAnimationFrame(function () { venter = false; oppdater(); }); } }, { passive: true });
+      oppdater();
+    })();
+
+    /* Tema: samme nøkkel som forsiden */
+    (function () {
+      var root = document.documentElement, btn = document.getElementById('theme');
+      function erMork() { var t = root.getAttribute('data-theme'); return t ? t === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches; }
+      function merk() { btn.setAttribute('aria-label', erMork() ? 'Switch to light theme' : 'Switch to dark theme'); }
+      btn.addEventListener('click', function () {
+        var ny = erMork() ? 'light' : 'dark';
+        root.setAttribute('data-theme', ny);
+        try { localStorage.setItem('in-theme', ny); } catch (e) {}
+        merk();
+      });
+      merk();
+    })();
+  </script>
+</body>
+</html>

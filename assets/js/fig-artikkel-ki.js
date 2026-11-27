@@ -20,6 +20,8 @@
         I.person(s, 52, 160, 54, "graa");
         I.skjerm(s, 108, 160, 40, "graa");
         T(s, 80, 112, "Bruker", { fet: true });
+        F.pil(s, [[132, 150], [190, 150]], { tone: "graa" });
+        T(s, 160, 136, "Spørsmål", liten({}));
         // Plantet instruks
         I.konvolutt(s, 265, 40, 32, "rod", { utrop: true });
         T(s, 292, 40, "Plantet instruks i data", liten({ anker: "start", tone: "rod" }));
@@ -31,6 +33,7 @@
         // «Gi meg alt» mot veggen
         F.pil(s, [[342, 165], [450, 165]], { tone: "rod", bred: true });
         T(s, 396, 140, "«Gi meg alt»", { fet: true, tone: "rod" });
+        I.kryss(s, 436, 165, 22, "rod");
         // Databasen som vegg
         F.boks(s, 460, 22, 34, 262, "", { tone: "navy", fyll: "solid", r: 3 });
         I.skjold(s, 477, 165, 64, "gronn");
@@ -57,8 +60,10 @@
         I.person(s, 40, 112, 44, "graa");
         I.skjerm(s, 92, 116, 32, "graa");
         T(s, 62, 160, "Bruker", { fet: true });
+        F.pil(s, [[110, 122], [128, 122]], { tone: "graa" });
         F.pil(s, [[200, 166], [200, 262]], { tone: "rod", bred: true });
         T(s, 212, 214, "«Gi meg alt»", { fet: true, tone: "rod", anker: "start" });
+        I.kryss(s, 200, 250, 22, "rod");
         F.boks(s, 18, 270, 344, 30, "", { tone: "navy", fyll: "solid", r: 3 });
         I.skjold(s, 200, 285, 58, "gronn");
         T(s, 190, 334, "Database: brukerens egne tilganger", { fet: true, tone: "navy" });
@@ -165,30 +170,39 @@
     I.telefon(s, 116, 44, 48, "graa");
     T(s, 146, 34, "Klient", { fet: true, anker: "start" });
     T(s, 146, 58, "historikk i minnet", liten({ anker: "start" }));
-    F.pil(s, [[116, 72], [116, 110]], { tone: "navy" });
+    F.pil(s, [[124, 72], [124, 110]], { tone: "navy" });
+    // Forklaring
+    F.linje(s, [[318, 30], [344, 30]], { tone: "navy" });
+    T(s, 352, 30, "kontrollert kode", liten({ anker: "start" }));
+    F.linje(s, [[318, 54], [344, 54]], { tone: "rod", stiplet: true });
+    T(s, 352, 54, "modellens ønske", liten({ anker: "start", tone: "rod" }));
     // Assistenttjenesten med menyen
-    var a = F.boks(s, 34, 112, 256, 166, "", { tone: "navy" });
-    T(a.g, 162, 132, "Assistenttjenesten", { fet: true });
-    F.boks(s, 54, 148, 216, 98, "", { tone: "graa", fyll: "flate", r: 4 });
+    var a = F.boks(s, 34, 112, 236, 166, "", { tone: "navy" });
+    T(a.g, 152, 132, "Assistenttjenesten", { fet: true });
+    F.boks(s, 50, 148, 204, 98, "", { tone: "graa", fyll: "flate", r: 4 });
     for (var i = 0; i < 5; i++) {
       var y = 164 + i * 17, ok = i < 3;
       var rad = F.g(s, ok ? null : "fig-dempet");
       if (ok) I.hake(rad, 72, y, 13, "gronn"); else I.las(rad, 72, y, 13, "graa");
       F.linje(rad, [[86, y], [ok ? 236 - i * 22 : 200 + i * 8, y]], { tone: ok ? "blekk" : "graa" });
     }
-    T(a.g, 162, 262, "meny etter brukerens tilganger", L);
+    T(a.g, 152, 262, "meny etter brukerens tilganger", L);
+    // Gatewayen er eneste vei til modellen
+    F.boks(s, 310, 102, 150, 42, "Gateway", { tone: "navy", fyll: "solid" });
+    F.pil(s, [[272, 123], [308, 123]], { tone: "navy" });
+    F.pil(s, [[385, 146], [385, 170]], { tone: "navy", start: true });
     // Modellen og ønsket
-    F.boks(s, 332, 150, 128, 72, "Modell", { tone: "graa", stiplet: true });
-    F.pil(s, [[292, 170], [330, 170]], { tone: "navy" });
-    F.pil(s, [[330, 204], [294, 204]], { tone: "rod", stiplet: true });
-    T(s, 396, 134, "Modellens ønske", liten({ fet: true, tone: "rod" }));
+    F.boks(s, 321, 172, 128, 54, "Modell", { tone: "graa", stiplet: true });
+    F.pil(s, [[319, 210], [274, 210]], { tone: "rod", stiplet: true });
     // Fire porter
-    var porter = [["bok", "1  Register"], ["klokke", "2  Autorisasjon"], ["trakt", "3  Argumenter"]];
+    var porter = [["bok", "1  Register", "ble verktøyet tilbudt?"], ["klokke", "2  Autorisasjon", "tilganger per forespørsel"], ["trakt", "3  Argumenter", "form, område, lengde"]];
     porter.forEach(function (p, j) {
       var y0 = 300 + j * 70;
       F.boks(s, 34, y0, 436, 46, "", { tone: "navy", fyll: "flate" });
       I[p[0]](s, 62, y0 + 23, 26, "navy");
       T(s, 86, y0 + 23, p[1], { fet: true, anker: "start" });
+      T(s, 226, y0 + 23, p[2], liten({ anker: "start", tone: "graa" }));
+      I.hake(s, 452, y0 + 23, 16, "graa");
     });
     F.pil(s, [[250, 280], [250, 298]], { tone: "navy" });
     F.pil(s, [[250, 346], [250, 368]], { tone: "navy" });
@@ -198,15 +212,16 @@
     T(s, 250, 660, "4  Database: RLS", { fet: true, tone: "navy" });
     T(s, 250, 684, "den primære grensen", liten({ tone: "navy" }));
     // Rødt 1: ukjent verktøy stoppes i registeret
-    F.pil(s, [[352, 224], [352, 288]], { tone: "rod", stiplet: true });
+    F.pil(s, [[352, 228], [352, 288]], { tone: "rod", stiplet: true });
     I.kryss(s, 352, 300, 24, "rod");
-    T(s, 362, 256, "ukjent\nverktøy", liten({ anker: "start", tone: "rod" }));
+    T(s, 362, 258, "ukjent\nverktøy", liten({ anker: "start", tone: "rod" }));
     // Rødt 2: id fra en annen virksomhet går gjennom tre porter, stopper i databasen
-    F.pil(s, [[432, 224], [432, 598], [304, 598]], { tone: "rod", stiplet: true });
+    F.pil(s, [[432, 228], [432, 598], [304, 598]], { tone: "rod", stiplet: true });
     I.kryss(s, 294, 598, 24, "rod");
     T(s, 368, 628, "id fra en annen\nvirksomhet", liten({ tone: "rod" }));
     // Svaret tilbake
-    F.pil(s, [[206, 610], [14, 610], [14, 44], [90, 44]], { tone: "gronn" });
+    F.pil(s, [[206, 610], [14, 610], [14, 196], [32, 196]], { tone: "gronn" });
+    F.pil(s, [[104, 110], [104, 72]], { tone: "gronn" });
     T(s, 110, 628, "svar, lenker, utkast", liten({ fet: true, tone: "gronn" }));
   };
 
@@ -217,7 +232,7 @@
       F.boks(s, 10, 6, 26, 26, String(n), { tone: "blekk", fyll: "solid", r: 13, str: 14 });
       T(s, 44, 19, t, { fet: true, anker: "start" });
     }
-    function nokler(s, x, y, n) { for (var i = 0; i < n; i++) I.nokkel(s, x + i * 22, y, 16, "rav"); }
+    function nokler(s, x, y, n) { for (var i = 0; i < n; i++) I.nokkel(s, x + i * 22, y, 16, "graa"); }
 
     var s1 = F.svg(c[0], { w: 240, h: 270, tittel: meta.tittel + ": 1, A planter en instruks", desc: meta.desc });
     tittel(s1, 1, "A planter");
@@ -240,13 +255,15 @@
     F.boks(s2, 150, 54, 30, 24, "?", { tone: "graa", fyll: "flate", r: 10 });
     F.pil(s2, [[166, 80], [154, 96]], { tone: "graa" });
     T(s2, 120, 206, "Ansatt B: bred tilgang", liten({ fet: true }));
-    T(s2, 120, 236, "Assistenten handler\nmed Bs rettigheter", L);
+    T(s2, 120, 230, "Med Bs rettigheter,", L);
+    T(s2, 120, 250, "etter As instruks", liten({ tone: "rod" }));
 
     var s3 = F.svg(c[2], { w: 240, h: 270, tittel: "3, B bekrefter utkastet", desc: "Assistenten lager et utkast med utfylte felt. B ser det og kan rette før noe skrives." });
     tittel(s3, 3, "B bekrefter");
     var u = F.boks(s3, 22, 52, 128, 124, "", { tone: "rav" });
     T(u.g, 86, 70, "Utkast", liten({ fet: true }));
     [88, 110, 132].forEach(function (y) { F.boks(s3, 36, y - 7, 100, 14, "", { tone: "graa", fyll: "flate", r: 3 }); });
+    F.boks(s3, 98, 105, 34, 10, "", { tone: "rod", fyll: "solid", r: 2 });
     I.hake(s3, 128, 158, 22, "gronn");
     I.blyant(s3, 150, 62, 26, "rav");
     I.person(s3, 202, 132, 70, "graa");
@@ -265,7 +282,7 @@
       F.linje(s, [pt(p, q, 0.6), pt(p, q, 0.88)], { tone: "graa", bred: true });
       var m = pt(p, q, 0.5), ang = Math.atan2(q[1] - p[1], q[0] - p[0]) * 180 / Math.PI + 90;
       var g = F.g(s, null, "translate(" + m[0] + " " + m[1] + ") rotate(" + ang + ")");
-      I.bom(g, -22, 0, 22, "gronn");
+      I.bom(g, -22, 0, 22, "navy");
     }
     F.linje(s, [pt(A, B, 0.12), pt(A, B, 0.88)], { tone: "navy", bred: true });
     var vm = pt(A, B, 0.5);
@@ -280,8 +297,8 @@
     var dor = F.g(s, "fig-dempet");
     F.boks(dor, C[0] - 15, C[1] - 24, 30, 46, "", { tone: "rod", fyll: "tone", r: 2 });
     F.pil(dor, [[C[0] + 2, C[1]], [C[0] + 34, C[1]]], { tone: "rod" });
-    T(s, C[0], 396, "En vei ut", { fet: true, tone: "rod" });
-    T(s, C[0], 424, "ingen lenker, bilder\neller kall ut", L);
+    T(s, C[0], 396, "En vei ut: fjernet", { fet: true, tone: "rod" });
+    T(s, C[0], 424, "ingen lenker, bilder\neller kall fra modellen", L);
     // Ingen lenker eller bilder fra modellen
     function overstrek(cx, cy) { F.linje(s, [[cx - 16, cy + 14], [cx + 16, cy - 14]], { tone: "rod", bred: true }); }
     var l = F.g(s, null, "translate(398 250) rotate(-35)");
@@ -332,8 +349,9 @@
     I.bjelle(s2, 262, 160, 24, "rav");
     I.skjold(s2, 120, 104, 40, "navy", { hake: false });
     I.lupe(s2, 120, 104, 20, "graa");
+    T(s2, 96, 60, "sjekker adressen,\nikke merket", liten({ tone: "navy" }));
     pakke(s2, 56, 126);
-    T(s2, 150, 240, "Ingen godkjent rute:\nhardt avslag og varsel", liten({ fet: true }));
+    T(s2, 150, 236, "Reserveruten avvises.\nIngen rute igjen: hardt avslag og varsel", liten({ fet: true }));
   };
 
   /* ---------- 11. Tre nivåer av testing ---------- */
@@ -343,7 +361,8 @@
     F.boks(s, 140, 14, 190, 112, "", { tone: "gronn" });
     I.terning(s, 210, 50, 32, "gronn");
     I.lupe(s, 258, 50, 34, "gronn");
-    T(s, 235, 100, "3  Ekte modell", { fet: true });
+    T(s, 235, 94, "3  Red teaming", { fet: true });
+    T(s, 235, 114, "mot ekte modell", L);
     T(s, 342, 70, "viser atferd,\nbeviser ikke\ndet umulige", liten({ anker: "start", tone: "gronn" }));
     // 2: simulert kompromittert modell
     F.boks(s, 90, 134, 290, 112, "", { tone: "rav" });
@@ -363,7 +382,8 @@
     F.pil(s, [[292, 292], [356, 292]], { tone: "rod" });
     I.kryss(s, 366, 292, 22, "rod");
     I.db(s, 410, 292, 50, "navy");
-    T(s, 250, 374, "1  Direkte autorisasjonstester", { fet: true });
+    T(s, 250, 364, "1  Direkte autorisasjonstester", { fet: true });
+    T(s, 250, 384, "uten modell", L);
     // Klamme for de to nederste
     F.linje(s, [[30, 136], [20, 136], [20, 392], [30, 392]], { tone: "blekk" });
     var t = T(s, 10, 264, "avhenger ikke av at angrepet lykkes", liten({ fet: true }));

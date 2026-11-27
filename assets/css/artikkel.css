@@ -66,6 +66,12 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
   border: 0; border-radius: 50%; background: transparent; color: var(--on-surface); cursor: pointer; transition: background .15s;
 }
 .theme:hover { background: var(--container); }
+.verktoy { flex: none; display: inline-flex; align-items: center; gap: 6px; }
+.sprak {
+  display: inline-flex; align-items: center; min-height: 32px; padding: 0 12px; border: 1px solid var(--outline-variant); border-radius: 999px;
+  font: 600 12px/1 var(--font-mono); letter-spacing: .04em; color: var(--on-surface); text-decoration: none; transition: background .15s;
+}
+.sprak:hover { background: var(--container); }
 .theme svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .theme .i-sun { display: none; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .theme .i-sun { display: block; } :root:not([data-theme="light"]) .theme .i-moon { display: none; } }

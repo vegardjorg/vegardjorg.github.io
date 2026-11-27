@@ -7,6 +7,9 @@
   <meta name="description" content="Erfaringer med sikkerhetsarkitektur, prompt injection og red teaming i et skybasert fagsystem for mange virksomheter.">
   <meta name="author" content="Vegard Cowie Jørgensen">
   <link rel="canonical" href="https://vegardjorg.github.io/artikler/ki-assistent-med-brukerens-tilganger.html">
+  <link rel="alternate" hreflang="nb" href="https://vegardjorg.github.io/artikler/ki-assistent-med-brukerens-tilganger.html">
+  <link rel="alternate" hreflang="en" href="https://vegardjorg.github.io/artikler/ai-assistant-with-user-permissions.html">
+  <link rel="alternate" hreflang="x-default" href="https://vegardjorg.github.io/artikler/ki-assistent-med-brukerens-tilganger.html">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Når KI-en bare får lov til det brukeren får lov til">
   <meta property="og:description" content="Erfaringer med sikkerhetsarkitektur, prompt injection og red teaming i et skybasert fagsystem for mange virksomheter.">
@@ -31,10 +34,13 @@
   <div class="wrap">
     <div class="masthead">
       <a class="home" href="../index.html"><img src="../assets/portrett.jpg" width="30" height="30" alt=""><span>Vegard Cowie Jørgensen</span></a>
+      <div class="verktoy">
+      <a class="sprak" href="ai-assistant-with-user-permissions.html" hreflang="en" lang="en" title="Read the article in English" aria-label="Read the article in English">EN</a>
       <button class="theme" id="theme" type="button" aria-label="Bytt til mørkt tema" title="Bytt tema">
         <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
       </button>
+      </div>
     </div>
 
     <main class="sheet">
@@ -150,7 +156,7 @@
             <p>Slik ser hele veien ut for én forespørsel:</p>
             <figure class="afig" id="fig-verktoykall" data-fig="verktoykall" data-tittel="Verktøykallet kontrolleres fire ganger">
               <div class="fig-flate"><p>Modellen kan bare be om verktøykall. Registeret, autorisasjonen, argumentkontrollen og databasen avgjør, og databasen stopper det de andre slipper gjennom.</p></div>
-              <figcaption><span class="fig-nr">Figur 3</span>Modellen foreslår, alt annet avgjør. Heltrukne linjer er kontrollert kode, og den stiplede er modellens ønske.</figcaption>
+              <figcaption><span class="fig-nr">Figur 3</span>Modellen foreslår, alt annet avgjør. Heltrukne linjer er kontrollert kode, og de stiplede er modellens ønsker.</figcaption>
             </figure>
             <h2 id="samtalehistorikken-bor-hos-klienten">Samtalehistorikken bor hos klienten</h2>
             <p>Når serveren ikke lagrer samtalen, må klienten holde den. Tenk deg en ansatt som spør om noe hen har tilgang til, får svaret, og så mister tilgangen. Sendes den gamle historikken med i neste spørsmål, kan modellen gjenta opplysningene uten et nytt databaseoppslag. RLS svikter ikke, men databasen blir ikke spurt på nytt.</p>
