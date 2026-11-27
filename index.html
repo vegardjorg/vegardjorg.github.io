@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Vegard Cowie Jørgensen</title>
-  <meta name="description" content="Vegard Cowie Jørgensen: datasikkerhet, agentisk koding og interaktive eksamensguider for IN2010, IN2090 og IN2120.">
+  <meta name="description" content="Vegard Cowie Jørgensen: datasikkerhet, agentisk koding, artikler om sikkerhetsarkitektur og KI, og interaktive eksamensguider for IN2010, IN2090 og IN2120.">
+  <link rel="stylesheet" href="assets/css/figurer.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232f5d8a'/%3E%3Ctext x='16' y='22' font-family='Segoe UI,Arial,sans-serif' font-size='15' font-weight='700' text-anchor='middle' fill='%23fff'%3EVCJ%3C/text%3E%3C/svg%3E">
   <!-- Samme temanøkkel som guidene (samme origin), så valget følger med. -->
   <script>(function(){try{var t=localStorage.getItem('in-theme')||'light';if(t!=='system')document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
@@ -147,6 +148,27 @@
     .sechead { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
     h2 { font-size: 20px; margin: 0; }
     .sechead p { margin: 0; color: var(--on-surface-variant); font-size: 14px; }
+
+    /* Artikler: hovedartikkel med forsidebildet tegnet av fig-motor.js */
+    .feature {
+      display: block; border: 1px solid var(--outline-variant); border-radius: var(--radius-md); overflow: hidden;
+      text-decoration: none; color: inherit; background: var(--sheet); transition: border-color .15s, box-shadow .15s;
+    }
+    .feature:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+    .feature:hover .go { text-decoration: underline; }
+    .feature-fig { margin: 0; padding: 22px 24px 18px; background: var(--fig-plate); border-bottom: 1px solid var(--outline-variant); }
+    .feature-fig:not(.er-tegnet) { display: none; }
+    .feature-txt { padding: 20px 24px 22px; }
+    .feature .mono-tag { color: var(--primary); margin-bottom: 10px; }
+    .feature h3 { margin: 0; font-size: clamp(22px, 3.6vw, 29px); line-height: 1.2; letter-spacing: -.01em; text-wrap: balance; }
+    .feature .dek { margin: 10px 0 0; font-size: 16.5px; line-height: 1.5; color: var(--on-surface-variant); text-wrap: pretty; }
+    .feature-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin: 16px 0 0; font-size: 14px; color: var(--on-surface-variant); }
+    .feature-meta .go { margin-left: auto; }
+    @media (max-width: 640px) {
+      .feature-fig { padding: 14px 10px 10px; }
+      .feature-txt { padding: 16px 16px 18px; }
+      .feature-meta .go { margin-left: 0; flex-basis: 100%; }
+    }
 
     /* Interesser */
     .interests { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
@@ -310,6 +332,7 @@
               <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
               GitHub
             </a>
+            <a class="btn" href="#artikler">Artikler</a>
             <a class="btn" href="#skole">Skoleprosjekter</a>
             <a class="btn" href="#ravenseat">Ravenseat</a>
           </div>
@@ -319,6 +342,25 @@
           <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
         </button>
       </header>
+
+      <section id="artikler" aria-labelledby="art-h">
+        <div class="sechead"><h2 id="art-h">Artikler</h2><p>Erfaringer fra eget arbeid</p></div>
+        <a class="feature" href="artikler/ki-assistent-med-brukerens-tilganger.html">
+          <figure class="feature-fig" data-fig="forside" aria-hidden="true">
+            <div class="fig-flate"><p>En manipulert modell ber om alle data, men databasen gir bare det brukeren selv har tilgang til.</p></div>
+          </figure>
+          <div class="feature-txt">
+            <p class="mono-tag">Sikkerhetsarkitektur og KI</p>
+            <h3>Når KI-en bare får lov til det brukeren får lov til</h3>
+            <p class="dek">Erfaringer med sikkerhetsarkitektur, prompt injection og red teaming i et skybasert fagsystem for mange virksomheter.</p>
+            <p class="feature-meta">
+              <span>Publisert <time datetime="2026-11-27">27. november 2026</time></span>
+              <span>ca. 23 min lesing</span>
+              <span class="go">Les artikkelen →</span>
+            </p>
+          </div>
+        </a>
+      </section>
 
       <section aria-labelledby="int-h">
         <div class="sechead"><h2 id="int-h">Interesser</h2></div>
@@ -688,5 +730,9 @@
       label();
     })();
   </script>
+  <!-- Forsidebildet i artikkelkortet tegnes av samme figurmotor som artikkelen. -->
+  <script src="assets/js/fig-motor.js"></script>
+  <script src="assets/js/fig-artikkel-ki.js"></script>
+  <script>if (window.FIG) FIG.start();</script>
 </body>
 </html>

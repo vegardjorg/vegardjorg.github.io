@@ -1,0 +1,86 @@
+/* ============================================================
+   vegardjorg.github.io · figurer.css
+   Figurstilen til fig-motor.js. Brukes av artikkelsidene og av forsiden (forsidebildet i artikkelkortet).
+   ============================================================ */
+:root {
+  /* Figurpalett (fra illustrasjonsplanen): marineblå håndhever, grønn godkjent, rav reduserer risiko, rød angrep */
+  --fig-blekk: #3a3f45; --fig-bg: #ffffff; --fig-plate: #f4f6f8;
+  --fig-navy: #1f3a5f;  --fig-navy-t: #e2e8f0;  --fig-on-navy: #ffffff;  --fig-navy-txt: #1f3a5f;
+  --fig-gronn: #2e9e6b; --fig-gronn-t: #dff2e8; --fig-on-gronn: #ffffff; --fig-gronn-txt: #1d6b47;
+  --fig-rav: #e8a33d;   --fig-rav-t: #fbeed8;   --fig-on-rav: #3a2600;   --fig-rav-txt: #8a5a12;
+  --fig-rod: #c8553d;   --fig-rod-t: #f7e2dc;   --fig-on-rod: #ffffff;   --fig-rod-txt: #a63f29;
+  --fig-graa: #8a9099;  --fig-graa-t: #eceff2;  --fig-on-graa: #ffffff;  --fig-graa-txt: #5b616b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fig-blekk: #e3e5e9; --fig-bg: #1c1f24; --fig-plate: #181b1f;
+    --fig-navy: #9dbbe0;  --fig-navy-t: #1f2e42;  --fig-on-navy: #0f1d2e;  --fig-navy-txt: #b9cfea;
+    --fig-gronn: #5cc796; --fig-gronn-t: #17352a; --fig-on-gronn: #0c2419; --fig-gronn-txt: #8fdcb7;
+    --fig-rav: #f0b65a;   --fig-rav-t: #3a2c12;   --fig-on-rav: #2a1b00;   --fig-rav-txt: #f3c77f;
+    --fig-rod: #e8846f;   --fig-rod-t: #3d2119;   --fig-on-rod: #2b0f08;   --fig-rod-txt: #f0a491;
+    --fig-graa: #7b828c;  --fig-graa-t: #262a30;  --fig-on-graa: #121417;  --fig-graa-txt: #a3a9b3;
+  }
+}
+:root[data-theme="dark"] {
+  --fig-blekk: #e3e5e9; --fig-bg: #1c1f24; --fig-plate: #181b1f;
+  --fig-navy: #9dbbe0;  --fig-navy-t: #1f2e42;  --fig-on-navy: #0f1d2e;  --fig-navy-txt: #b9cfea;
+  --fig-gronn: #5cc796; --fig-gronn-t: #17352a; --fig-on-gronn: #0c2419; --fig-gronn-txt: #8fdcb7;
+  --fig-rav: #f0b65a;   --fig-rav-t: #3a2c12;   --fig-on-rav: #2a1b00;   --fig-rav-txt: #f3c77f;
+  --fig-rod: #e8846f;   --fig-rod-t: #3d2119;   --fig-on-rod: #2b0f08;   --fig-rod-txt: #f0a491;
+  --fig-graa: #7b828c;  --fig-graa-t: #262a30;  --fig-on-graa: #121417;  --fig-graa-txt: #a3a9b3;
+}
+
+.fig-tegning { display: block; width: 100%; height: auto; margin: 0 auto; font-family: var(--font); overflow: visible; }
+.fig-txt { fill: var(--fig-blekk); font-size: 15px; }
+.fig-fet { font-weight: 700; }
+.fig-kursiv { font-style: italic; }
+.fig-liten { font-size: 13px; }
+.fig-t-navy { fill: var(--fig-navy-txt); } .fig-t-gronn { fill: var(--fig-gronn-txt); } .fig-t-rav { fill: var(--fig-rav-txt); }
+.fig-t-rod { fill: var(--fig-rod-txt); } .fig-t-graa { fill: var(--fig-graa-txt); } .fig-t-blekk { fill: var(--fig-blekk); }
+.fig-strek { stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; fill: none; }
+.fig-bred { stroke-width: 4.5; }
+.fig-stiplet { stroke-dasharray: 7 6; }
+.fig-s-blekk { stroke: var(--fig-blekk); } .fig-s-navy { stroke: var(--fig-navy); } .fig-s-gronn { stroke: var(--fig-gronn); }
+.fig-s-rav { stroke: var(--fig-rav); } .fig-s-rod { stroke: var(--fig-rod); } .fig-s-graa { stroke: var(--fig-graa); }
+.fig-f-blekk { fill: var(--fig-blekk); } .fig-f-navy { fill: var(--fig-navy); } .fig-f-gronn { fill: var(--fig-gronn); }
+.fig-f-rav { fill: var(--fig-rav); } .fig-f-rod { fill: var(--fig-rod); } .fig-f-graa { fill: var(--fig-graa); }
+
+/* Toner for bokser og ikoner: --c (farge), --c-t (tonet flate), --c-on (på fylt farge), --c-txt (tekst på tonet flate) */
+.fig-b-navy, .fig-i-navy { --c: var(--fig-navy); --c-t: var(--fig-navy-t); --c-on: var(--fig-on-navy); --c-txt: var(--fig-navy-txt); }
+.fig-b-gronn, .fig-i-gronn { --c: var(--fig-gronn); --c-t: var(--fig-gronn-t); --c-on: var(--fig-on-gronn); --c-txt: var(--fig-gronn-txt); }
+.fig-b-rav, .fig-i-rav { --c: var(--fig-rav); --c-t: var(--fig-rav-t); --c-on: var(--fig-on-rav); --c-txt: var(--fig-rav-txt); }
+.fig-b-rod, .fig-i-rod { --c: var(--fig-rod); --c-t: var(--fig-rod-t); --c-on: var(--fig-on-rod); --c-txt: var(--fig-rod-txt); }
+.fig-b-graa, .fig-i-graa { --c: var(--fig-graa); --c-t: var(--fig-graa-t); --c-on: var(--fig-on-graa); --c-txt: var(--fig-graa-txt); }
+.fig-b-blekk, .fig-i-blekk { --c: var(--fig-blekk); --c-t: var(--fig-graa-t); --c-on: var(--fig-bg); --c-txt: var(--fig-blekk); }
+
+.fig-boks-r { stroke: var(--c); stroke-width: 2; }
+.fig-fyll-solid .fig-boks-r { fill: var(--c); }
+.fig-fyll-solid .fig-txt { fill: var(--c-on); }
+.fig-fyll-tone .fig-boks-r { fill: var(--c-t); }
+.fig-fyll-tone .fig-txt { fill: var(--fig-blekk); }
+.fig-fyll-flate .fig-boks-r { fill: var(--fig-bg); }
+.fig-fyll-ingen .fig-boks-r { fill: none; }
+
+.fig-i-fyll { fill: var(--c); }
+.fig-i-fyll2 { fill: color-mix(in srgb, var(--c) 70%, var(--fig-bg)); }
+.fig-i-strek { fill: none; stroke: var(--c); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.fig-i-motstrek { fill: none; stroke: var(--c-on); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+.fig-i-tynn { stroke-width: 1.8; }
+.fig-i-tykk { stroke-width: 4; }
+.fig-i-tykkere { stroke-width: 6; }
+.fig-i-hull { fill: var(--fig-bg); }
+.fig-i-flate { fill: var(--fig-bg); stroke: var(--c); stroke-width: 2.5; }
+.fig-i-merke { fill: var(--fig-rod); stroke: var(--fig-bg); stroke-width: 2; }
+.fig-i-merkestrek { fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; }
+.fig-dempet { opacity: .38; }
+.fig-paa-gronn { fill: var(--fig-on-gronn); }
+/* Høye og kvadratiske figurer blir ikke større enn dette på bred skjerm */
+.fig-hoy { max-width: 500px; }
+.fig-kvadrat { max-width: 470px; }
+
+/* Celler: side om side når figuren er bred nok, ellers stablet */
+.fig-celler { container-type: inline-size; width: 100%; }
+.fig-celler-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+@container (min-width: 560px) { .fig-celler-grid { grid-template-columns: repeat(var(--fig-kol, 3), minmax(0, 1fr)); } }
+.fig-celle { min-width: 0; }
+.fig-celle > .fig-tegning { max-width: 360px; }

@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Når KI-en bare får lov til det brukeren får lov til · Vegard Cowie Jørgensen</title>
+  <meta name="description" content="Erfaringer med sikkerhetsarkitektur, prompt injection og red teaming i et skybasert fagsystem for mange virksomheter.">
+  <meta name="author" content="Vegard Cowie Jørgensen">
+  <link rel="canonical" href="https://vegardjorg.github.io/artikler/ki-assistent-med-brukerens-tilganger.html">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Når KI-en bare får lov til det brukeren får lov til">
+  <meta property="og:description" content="Erfaringer med sikkerhetsarkitektur, prompt injection og red teaming i et skybasert fagsystem for mange virksomheter.">
+  <meta property="og:url" content="https://vegardjorg.github.io/artikler/ki-assistent-med-brukerens-tilganger.html">
+  <meta property="og:locale" content="nb_NO">
+  <meta property="article:published_time" content="2026-11-27">
+  <meta property="article:author" content="Vegard Cowie Jørgensen">
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "Article", "headline": "Når KI-en bare får lov til det brukeren får lov til", "description": "Erfaringer med sikkerhetsarkitektur, prompt injection og red teaming i et skybasert fagsystem for mange virksomheter.",
+   "datePublished": "2026-11-27", "inLanguage": "nb", "mainEntityOfPage": "https://vegardjorg.github.io/artikler/ki-assistent-med-brukerens-tilganger.html",
+   "image": "https://vegardjorg.github.io/assets/portrett.jpg",
+   "author": {"@type": "Person", "name": "Vegard Cowie Jørgensen", "url": "https://vegardjorg.github.io/"}}
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232f5d8a'/%3E%3Ctext x='16' y='22' font-family='Segoe UI,Arial,sans-serif' font-size='15' font-weight='700' text-anchor='middle' fill='%23fff'%3EVCJ%3C/text%3E%3C/svg%3E">
+  <!-- Samme temanøkkel som forsiden og guidene (samme origin). -->
+  <script>(function(){try{var t=localStorage.getItem('in-theme')||'light';if(t!=='system')document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
+  <link rel="stylesheet" href="../assets/css/artikkel.css">
+  <link rel="stylesheet" href="../assets/css/figurer.css">
+</head>
+<body>
+  <a class="skip-link" href="#tekst">Hopp til teksten</a>
+  <div class="wrap">
+    <div class="masthead">
+      <a class="home" href="../index.html"><img src="../assets/portrett.jpg" width="30" height="30" alt=""><span>Vegard Cowie Jørgensen</span></a>
+      <button class="theme" id="theme" type="button" aria-label="Bytt til mørkt tema" title="Bytt tema">
+        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>
+        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+      </button>
+    </div>
+
+    <main class="sheet">
+      <article>
+        <header class="art-head">
+          <p class="mono-tag">Artikkel · Sikkerhetsarkitektur og KI</p>
+          <h1>Når KI-en bare får lov til det brukeren får lov til</h1>
+          <p class="dek">Erfaringer med sikkerhetsarkitektur, prompt injection og red teaming i et skybasert fagsystem for mange virksomheter</p>
+          <div class="byline">
+            <img src="../assets/portrett.jpg" width="52" height="52" alt="Portrett av Vegard Cowie Jørgensen">
+            <div>
+              <span class="navn">Vegard Cowie Jørgensen</span>
+              <span class="meta">Publisert <time datetime="2026-11-27">27. november 2026</time> · ca. 23 min lesing</span>
+            </div>
+          </div>
+        </header>
+
+        <figure class="afig afig-hero" id="fig-forside" data-fig="forside" data-tittel="Modellen lures, databasen holder">
+          <div class="fig-flate"><p>En manipulert modell ber om alle data, men databasen gir bare det brukeren selv har tilgang til, og de andre virksomhetenes data er urørt.</p></div>
+          <figcaption>Modellen kan lures. Grensen ligger i databasen, som svarer med brukerens egne tilganger.</figcaption>
+        </figure>
+
+        <div class="art-grid">
+          <nav class="toc" aria-label="Innhold">
+            <div class="toc-inner">
+              <details open id="toc-d">
+                <summary><span class="toc-t">Innhold</span></summary>
+                <ol>
+                  <li><a href="#modellen-er-ikke-sikkerhetsgrensen">Modellen er ikke sikkerhetsgrensen</a></li>
+                  <li><a href="#hvem-jeg-forsvarer-mot">Hvem jeg forsvarer mot</a></li>
+                  <li><a href="#en-inngang-for-all-tekstgenerering">Én inngang for all tekstgenerering</a></li>
+                  <li><a href="#verktoy-fra-meny-til-utforelse">Verktøy: fra meny til utførelse</a></li>
+                  <li><a href="#samtalehistorikken-bor-hos-klienten">Samtalehistorikken bor hos klienten</a></li>
+                  <li><a href="#prompt-injection">Prompt injection</a></li>
+                  <li><a href="#bedrock-og-dataresidens">Bedrock og dataresidens</a></li>
+                  <li><a href="#klassifisering-og-logging">Klassifisering og logging</a></li>
+                  <li><a href="#innlogging-og-token">Innlogging og token</a></li>
+                  <li><a href="#kost-og-misbruk">Kost og misbruk</a></li>
+                  <li><a href="#red-teaming">Red teaming</a></li>
+                  <li><a href="#personvern-og-ki-forordningen">Personvern og KI-forordningen</a></li>
+                  <li><a href="#ikke-alt-trenger-en-sprakmodell">Ikke alt trenger en språkmodell</a></li>
+                  <li><a href="#kontroller-som-fanger-neste-feil">Kontroller som fanger neste feil</a></li>
+                  <li><a href="#hva-arkitekturen-ikke-loser">Hva arkitekturen ikke løser</a></li>
+                  <li><a href="#kilder">Kilder</a></li>
+                </ol>
+              </details>
+            </div>
+          </nav>
+
+          <div class="art-body" id="tekst">
+            <p>En KI-assistent i et fagsystem ser fort ut som et lite under. Brukeren spør hva som er forfalt, hvor et dokument ligger, eller ber om hjelp til å fylle ut et skjema. Bak spørsmålene ligger saker, dokumenter og personalopplysninger, fordelt på mange virksomheter som deler samme system. Assistenten er samtidig en komponent som ikke pålitelig skiller instrukser fra data, og som får lov til å slå opp i nettopp disse opplysningene.</p>
+            <p>Her beskriver jeg hvordan jeg har bygget og testet en slik assistent: hvor jeg har lagt sikkerhetsgrensen, hvordan jeg lagdeler vernet mot prompt injection, og hvordan jeg prøver å få systemet til å svikte med vilje. Mye av det nyttigste jeg har lært, kom fra feil jeg fant i egne antakelser og i testene som skulle fange dem.</p>
+            <aside class="oppsummert" aria-labelledby="kort-oppsummert">
+            <p class="oppsummert-t" id="kort-oppsummert">Kort oppsummert</p>
+            <ul>
+            <li>Databasen er den primære autorisasjonsgrensen. Radnivåsikkerhet i PostgreSQL isolerer hver virksomhet, og assistenten slår opp data med brukerens egen identitet.</li>
+            <li>Modellen får bare leseverktøy, og hvert verktøykall kontrolleres på nytt når det utføres. Skriving skjer først når brukeren har bekreftet et utfylt kort.</li>
+            <li>All tekstgenerering går gjennom én intern gateway som eier EU-ruting, kvoter, kostvern og logging.</li>
+            <li>Vernet mot prompt injection er lagdelt, og jeg holder det som håndhever, adskilt fra det som bare reduserer risiko.</li>
+            <li>Grensen testes på tre nivåer: rundt 1 800 databasetester og over 45 000 nettverkskontroller, en simulert kompromittert modell og red teaming mot en ekte modell.</li>
+            </ul>
+            </aside>
+            <h2 id="modellen-er-ikke-sikkerhetsgrensen">Modellen er ikke sikkerhetsgrensen</h2>
+            <p>Det første valget formet resten: språkmodellen skal ikke være det som hindrer en datalekkasje. Prompt injection er blant de mest sentrale angrepsklassene mot systemer bygget på språkmodeller, og ingen modell er immun.</p>
+            <p>Databasen er derfor den primære autorisasjonsgrensen for virksomhetsdata. Radnivåsikkerhet (RLS) i PostgreSQL isolerer hver virksomhet, og tilgangssystemet sjekker tilganger («kan lese saker»), ikke rollenavn («er leder»). Roller er samlinger av tilganger som hver virksomhet setter sammen og kan gi nytt navn. Tjenestelaget og KI-gatewayen håndhever resten: hvem som får bruke KI, hvor teksten sendes, kvoter og logging.</p>
+            <p>RLS dekker ikke alt. Privilegerte databasefunksjoner og tjenesteidentiteter går utenom radpolicyene (en funksjon med <code>SECURITY DEFINER</code>, en rolle med <code>BYPASSRLS</code> og tabelleieren når <code>FORCE ROW LEVEL SECURITY</code> ikke er satt), og derfor behandler jeg dem som egne kontrollflater. En slik funksjon må selv sjekke hvem som kaller og hvilken virksomhet det gjelder, og en tjenesteidentitet får bare gjøre det den trenger.</p>
+            <p>Assistenten kobles på dette nedenfra. Når den slår opp data, gjør den det med brukerens egen identitet, slik at databasen avgjør hva som kommer tilbake. Ber et manipulert modellsvar om noe brukeren ikke har tilgang til, får det det samme som brukeren ville fått i appen: ingenting.</p>
+            <p>Gjennom hele teksten skiller jeg mellom tre slags vern:</p>
+            <ul>
+            <li><strong>Det som håndhever.</strong> Deterministiske kontroller som holder selv om modellen adlyder angriperen fullt ut: RLS, tilgangssjekk ved hvert verktøykall, residenskontroller i koden. Et brudd her er en sårbarhet.</li>
+            <li><strong>Det som reduserer risiko.</strong> Atferdsvern som gjør angrep vanskeligere uten å garantere noe: instrukser til modellen, innpakning og rensing av data, tak på lengde.</li>
+            <li><strong>Det som oppdager.</strong> Tester, red teaming og overvåking som viser når noe av det over ikke virker.</li>
+            </ul>
+            <figure class="afig" id="fig-tre-vern" data-fig="tre-vern" data-tittel="Tre slags vern">
+              <div class="fig-flate"><p>Tre slags vern: kontroller som håndhever, tiltak som reduserer risiko, og tester og overvåking som oppdager.</p></div>
+              <figcaption><span class="fig-nr">Figur 1</span>Bare det som håndhever, må holde når modellen adlyder angriperen. Resten er dybdeforsvar og varsling.</figcaption>
+            </figure>
+            <h2 id="hvem-jeg-forsvarer-mot">Hvem jeg forsvarer mot</h2>
+            <p>Trusselmodellen er kort med vilje:</p>
+            <div class="tabell"><table>
+            <thead><tr><th scope="col">Aktør</th><th scope="col">Hva hen har</th><th scope="col">Hva som skal holde</th></tr></thead><tbody>
+            <tr><th scope="row">Uinnlogget angriper</th><td>Offentlige endepunkter</td><td>Autentisering, ingen data uten gyldig identitet</td></tr>
+            <tr><th scope="row">Ansatt med vanlig tilgang</th><td>Gyldig konto, egen virksomhet</td><td>Tilgangene, ikke mer</td></tr>
+            <tr><th scope="row">Ansatt som planter instrukser i data</th><td>Skrivetilgang til vanlige felt</td><td>At teksten forblir data for den som leser den</td></tr>
+            <tr><th scope="row">Administrator i en annen virksomhet</th><td>Bred tilgang i egen virksomhet</td><td>Isolasjonen mellom virksomheter</td></tr>
+            <tr><th scope="row">Angriper med stjålet token eller passord</th><td>Gyldig legitimasjon</td><td>Tilbakekalling og begrenset skade</td></tr>
+            <tr><th scope="row">Manipulert eller kompromittert modell</th><td>Vilkårlige svar og verktøyforslag</td><td>Kontroll ved utførelse og i databasen</td></tr>
+            <tr><th scope="row">Utvikler som konfigurerer feil</th><td>Legitim tilgang til kode og oppsett</td><td>Automatiske kontroller i byggekjeden (CI)</td></tr>
+            </tbody></table></div>
+            <p>Trusselmodellen dekker ikke en kompromittert leverandør (sky, modell eller database), et kompromittert driftsmiljø eller byggekjede, eller noen som sitter ved en ulåst enhet. Der er jeg avhengig av leverandøravtaler, tilgangsstyring for drift og vanlig enhetssikkerhet. Sikkerhetspåstandene under gjelder innenfor denne rammen.</p>
+            <h2 id="en-inngang-for-all-tekstgenerering">Én inngang for all tekstgenerering</h2>
+            <p>Klienten har ingen nøkkel til en modelleverandør, og et KI-kall går i tre ledd. En serverløs funksjon per KI-funksjon tar imot melding og identitet, sjekker at virksomheten har KI slått på, reserverer kvote og eier samtalen med modellen, inkludert verktøyoppslagene. En intern KI-gateway, som brukere ikke kan nå direkte, eier nøklene, valg av rute og modell, dataresidens, kostvern og logging. Databasen håndhever tilganger som før, uten å vite at det er en KI som spør.</p>
+            <figure class="afig" id="fig-en-inngang" data-fig="en-inngang" data-tittel="Én inngang: tre ledd">
+              <div class="fig-flate"><p>Appen når aldri modellen direkte. Kallet går via en KI-funksjon og en intern gateway, og databasen håndhever tilgangene.</p></div>
+              <figcaption><span class="fig-nr">Figur 2</span>All tekstgenerering går gjennom én gateway, som eier ruting, kostvern og logging.</figcaption>
+            </figure>
+            <p>Gatewayen vet ingenting om fagområdet. Assistent, oversettelse og andre funksjoner bruker den likt. En ny KI-funksjon arver residenskontroller, kostvern og logging uten å bygge dem selv. En automatisk kontroll krever at hver serverfunksjon som ber om tekstgenerering for en virksomhet, går gjennom den felles tilgangssjekken først.</p>
+            <p>Samtalen lagres ikke på serveren, og mellomresultatene kastes når svaret er levert. Det gir en mindre angrepsflate og færre data å forvalte. Prisen er at jeg ikke kan lese tilbake samtaler for å feilsøke. Jeg logger rik metadata i stedet.</p>
+            <h2 id="verktoy-fra-meny-til-utforelse">Verktøy: fra meny til utførelse</h2>
+            <p>For å svare på spørsmål om virksomhetens egne data trenger modellen verktøy, altså funksjoner den kan be om å få kjørt. Kundedata hentes ikke fra en vektordatabase. Verktøyene slår opp direkte i databasen med brukerens identitet, og de samme radpolicyene gjelder som i appen. I et søk over innbygde tekstbiter (embeddings) måtte tilgangen vært kopiert inn på hver bit, der den kan bli utdatert, og filtreringen måtte skjedd før eller etter søket, med hver sin måte å slippe gjennom eller skjule treff på.</p>
+            <p>Hvilke verktøy modellen får se, avgjøres per forespørsel ut fra brukerens tilganger, hentet på nytt hver gang. Tilgangskravet for hvert verktøy står i ett felles register, og et verktøy som mangler der, krever en tilgang ingen har og blir usynlig for alle. En snapshot-test gjør enhver endring i menyen synlig i kodegjennomgangen.</p>
+            <p>Menyen alene beskytter likevel lite. En manipulert modell kan be om et verktøy den ikke ble tilbudt, sende rare argumenter eller oppgi en id fra en annen virksomhet. Derfor kontrolleres kallet på nytt når det utføres, i fire ledd:</p>
+            <ol>
+            <li><strong>Registeret.</strong> Navnet slås opp i lista over verktøy brukeren fikk tilbudt i denne forespørselen. Ukjente navn gir en feilkode tilbake til modellen, og ingenting kjøres.</li>
+            <li><strong>Autorisasjonen.</strong> Lista er bygget av tilgangene hentet ved starten av denne forespørselen, ikke da samtalen startet. Det er et øyeblikksbilde som lever i noen sekunder. Mister brukeren en tilgang midt i en forespørsel, er det det fjerde leddet som fanger det. Radpolicyene leser virksomheten fra tokenet, men slår opp tilgangene, profilens status og nødbremsen i tabeller ved hvert oppslag.</li>
+            <li><strong>Argumentene.</strong> Hvert verktøy validerer sine egne argumenter: id-er må ha riktig form, tall klemmes inn i et tillatt område, fritekst kappes, og antall rader har et tak.</li>
+            <li><strong>Databasen.</strong> Oppslaget kjøres med brukerens identitet, slik at RLS gjelder uansett hva de tre første leddene slapp gjennom.</li>
+            </ol>
+            <p>Det siste leddet gjør resten til dybdeforsvar. Slipper en feil i registeret eller valideringen et kall gjennom, får det bare rader brukeren kunne lest selv.</p>
+            <p>De mest sensitive områdene, som grenser mot særlige kategorier av personopplysninger, har ingen verktøy i det hele tatt. Der det trengs innsikt, gir jeg aggregater og status i stedet for fritekst, og et aggregat over en liten gruppe holdes tilbake under en minste gruppestørrelse, slik at det ikke kan peke ut enkeltpersoner.</p>
+            <p>Noen svar bør heller ikke formuleres av en modell. Gjelder spørsmålet noe akutt der et feil råd kan få konsekvenser for sikkerheten, improviserer assistenten ikke. Den viser kilden og relevant kontaktinformasjon som kort, og de kritiske opplysningene vises deterministisk fra dataene.</p>
+            <p>Slik ser hele veien ut for én forespørsel:</p>
+            <figure class="afig" id="fig-verktoykall" data-fig="verktoykall" data-tittel="Verktøykallet kontrolleres fire ganger">
+              <div class="fig-flate"><p>Modellen kan bare be om verktøykall. Registeret, autorisasjonen, argumentkontrollen og databasen avgjør, og databasen stopper det de andre slipper gjennom.</p></div>
+              <figcaption><span class="fig-nr">Figur 3</span>Modellen foreslår, alt annet avgjør. Heltrukne linjer er kontrollert kode, og den stiplede er modellens ønske.</figcaption>
+            </figure>
+            <h2 id="samtalehistorikken-bor-hos-klienten">Samtalehistorikken bor hos klienten</h2>
+            <p>Når serveren ikke lagrer samtalen, må klienten holde den. Tenk deg en ansatt som spør om noe hen har tilgang til, får svaret, og så mister tilgangen. Sendes den gamle historikken med i neste spørsmål, kan modellen gjenta opplysningene uten et nytt databaseoppslag. RLS svikter ikke, men databasen blir ikke spurt på nytt.</p>
+            <p>Historikken ligger bare i minnet på enheten, aldri på disk, i hurtigbuffer eller i databasen, og forsvinner når appen lukkes. Den er knyttet til personen i den aktive virksomheten. Ved utlogging, ny bruker på samme enhet eller bytte av virksomhet tømmes samtalen, og et svar som er underveis, avbrytes så det ikke lander hos feil person.</p>
+            <p>En tilgangsendring midt i en samtale i samme virksomhet tømmer ikke historikken. Brukeren har allerede sett opplysningene, samtalen er kortlivet, og å tømme den ville krevd at klienten fulgte med på tilganger i sanntid. Jeg har valgt dataminimering og kort levetid fremfor umiddelbar tilbakekalling av det som allerede er vist. Nye oppslag går uansett mot tilgangene slik de er nå.</p>
+            <p>Serveren stoler heller ikke på historikken. Den godtas bare som ren tekst fra to tillatte avsendere, i begrenset mengde, og siste melding må være brukerens. Verktøykall og verktøyresultater bygges bare på serveren innenfor én forespørsel. En forfalsket historikk kan ikke smugle inn verktøyblokker. Oppdiktede «tidligere svar» gir ingen ny tilgang.</p>
+            <h2 id="prompt-injection">Prompt injection</h2>
+            <p>Prompt injection er en familie av angrep der tekst angriperen styrer, havner i modellens kontekst og blir lest som en instruks. Det er to veier inn: brukerens egen melding (direkte) og alt verktøyene henter fra databasen (indirekte). NCSC har påpekt at dette er noe annet enn SQL-injeksjon. En database kan skille kode fra data med parametriserte spørringer, mens en språkmodell mangler en tilsvarende maskingrense.</p>
+            <h3 id="den-forvirrede-stedfortrederen">Den forvirrede stedfortrederen</h3>
+            <p>Den indirekte veien er farligst, fordi angriperen og den som spør, ikke trenger å være samme person. Ansatt A, med begrenset tilgang, skriver en instruks i et vanlig felt, for eksempel beskrivelsen i en sak. Ansatt B, som har bredere tilgang, spør assistenten om noe som får den til å lese feltet. Assistenten handler nå med Bs rettigheter, men delvis etter As instruks. Det er en variant av det klassiske «confused deputy»-problemet.</p>
+            <figure class="afig" id="fig-stedfortreder" data-fig="stedfortreder" data-tittel="Den forvirrede stedfortrederen">
+              <div class="fig-flate"><p>En ansatt med smal tilgang planter en instruks i et felt. En kollega med bred tilgang spør assistenten, som leser feltet, men alt som skal skrives, blir et utkast kollegaen må bekrefte.</p></div>
+              <figcaption><span class="fig-nr">Figur 4</span>Indirekte injeksjon: alt er autorisert for B, så spørsmålet er om handlingen er det B faktisk ville.</figcaption>
+            </figure>
+            <p>Databasen hjelper lite her, fordi alt som skjer, er autorisert for B. Spørsmålet er om handlingen stemmer med hva B ville. Jeg møter det med tre ting: verktøyene bare leser, modellen har få veier ut, og alt som endrer noe, går via et menneske som ser forslaget før det skjer.</p>
+            <h3 id="det-som-handhever">Det som håndhever</h3>
+            <p>Simon Willison kaller kombinasjonen av tilgang til private data, eksponering for upålitelig innhold og en vei ut for «the lethal trifecta». Assistenten trenger de to første for å være nyttig, så jeg fjerner den tredje. Verktøyene leser, det finnes ingen websøk eller andre kall ut, og modellen kan ikke lage lenker eller bilder. Den peker bare med referansemarkører serveren har gitt den gjennom verktøyene, og klienten oversetter bare slike markører mot sin egen rutetabell. En oppdiktet markør blir ikke en lenke. Klienten tegner heller ingen bilder, og en bildeadresse kan dermed ikke brukes til null-klikk-eksfiltrasjon. Svaret tegnes med appens egne komponenter fra et lite, kjent tekstformat, aldri som HTML eller Markdown med lenker, så en adresse modellen skriver, forblir tekst.</p>
+            <figure class="afig" id="fig-trekant" data-fig="trekant" data-tittel="Den dødelige trekanten, brutt">
+              <div class="fig-flate"><p>Lekkasje krever private data, upålitelig innhold og en vei ut. Her er veien ut fjernet: ingen lenker, bilder eller nettkall fra modellen.</p></div>
+              <figcaption><span class="fig-nr">Figur 5</span>Assistenten trenger de to første. Derfor er det den tredje som fjernes.</figcaption>
+            </figure>
+            <p>Arkitekturen fjerner modellens direkte kanaler for eksfiltrasjon. Indirekte videreformidling gjennom brukeren eller vanlige arbeidsflyter må håndteres for seg. Assistenten kan for eksempel foreslå at noe skrives inn i et skjema andre kan lese, eller formulere et svar som får brukeren til å dele noe videre.</p>
+            <p>Assistenten skriver heller ikke selv. En skrivehandling blir et kort med utfylte felt som brukeren kan redigere og må bekrefte, og selve skrivingen går gjennom de samme veiene som et manuelt utfylt skjema, med samme tilgangssjekk og revisjonsspor. Skrivingen bygges bare av feltene kortet viser, pluss verdier klienten setter selv, som virksomhet og tidspunkt. Modellen kan ikke legge ved skjulte parametre. Hver handlingstype kan slås av sentralt. En bruker som bekrefter uten å lese, er en reell rest, men handlingen kan ikke gå utover brukerens egen tilgang.</p>
+            <p>Injisert tekst kan også gi seg ut for å være daglig leder, et tilsyn eller systemet selv. Det endrer ingenting i databasen, der rettigheter følger av hvem som spør.</p>
+            <h3 id="det-som-reduserer-risiko">Det som reduserer risiko</h3>
+            <p>Resten av vernet gjør angrep vanskeligere uten å garantere noe. For hvert tiltak har jeg skrevet ned hva det ikke beskytter mot.</p>
+            <p>Instruksene kommer bare fra systemet. Brukerens tekst og verktøyresultater merkes som data, og modellen får beskjed om ikke å følge instrukser som står i dem. Atferdsreglene (data er ikke instrukser, instruksene røpes ikke, roller tas ikke fra data, påstått autoritet gjengis med kilde) ligger i et lag som eies av koden. De overlever dermed at noen justerer den delen av prompten som kan redigeres i et administrasjonspanel. Det senker suksessraten for naive forsøk, men en modell kan fortsatt overtales.</p>
+            <p>Data legges i avgrensede seksjoner med markører. I en intern revisjon fant jeg at markørene ikke var nøytralisert inne i selve dataene. En tekst med en avsluttende markør kunne lukke seksjonen tidlig og få resten til å se ut som en instruks. Rettingen ligger i den felles renseren, og alle KI-funksjonene fikk vernet samtidig. Innpakningen gjør likevel ingenting med overtalende tekst som holder seg innenfor.</p>
+            <p>Usynlige tegn (nullbredde-, retnings-, tag- og kontrolltegn) vaskes bort fra brukermeldinger og verktøydata. Det fanger ikke synlig tekst, homoglyfer eller koding som base64, og noen av tegnene har legitim bruk i enkelte språk.</p>
+            <p>Meldinger, verktøyresultater, historikk og antall verktøyrunder har tak, og kapping skjer med tydelig markør og det viktigste først. Det begrenser angrep som drukner instruksene i tekst, og kostnadsangrep via enorme felt. Systemets egne instrukser har også et tak, og fordi kapping der ville skjedd stille, sier koden fra i loggen før taket nås.</p>
+            <p>Hvert fritekstfelt et verktøy returnerer, er en mulig kanal for indirekte injeksjon. Jeg kartlegger hvilke felt verktøyene leser, holder de sensitive utenfor og lar resten gå gjennom innpakning, vasking og kapping. Der det går, bygger serveren den viktigste informasjonen (nøkkeltall, kildedokumenter, kontaktinformasjon, handlingsforslag) som kort fra verktøyresultatene, så en manipulert modell har mindre å endre på.</p>
+            <p>Systeminstruksene skal ikke inneholde noe som skader om de lekker: ingen nøkler, ingen andres data, ingen bakdører.</p>
+            <h2 id="bedrock-og-dataresidens">Bedrock og dataresidens</h2>
+            <p>Jeg valgte AWS Bedrock fordi det gir tilgang til moderne modeller i EU-regioner, med en kontoinnstilling som gjør at forespørsler og svar ikke lagres hos leverandøren. Identiteten gatewayen bruker, har bare rett til å kalle modeller, ikke til å endre lagrings- eller logginnstillinger. Den kan dermed ikke slå på logging av modellkall (invocation logging, av som standard), som ellers kunne lagret både inndata og svar i kontoen. Nøklene ligger som hemmeligheter i servermiljøet.</p>
+            <p>Et EU-endepunkt betyr ikke i seg selv at inferensen skjer i EU. Bedrock skiller mellom kall til en modell i én region og kall via en inferensprofil som kan rute til andre regioner. En geografisk profil holder seg innenfor geografien, mens en global profil kan sende kallet hvor som helst. Hvor teksten behandles, avhenger av både endepunktet og modell-id-en. Jeg tillater bare regionale modell-id-er eller EU-profiler, og bare regioner i EU/EØS. Noen regioner med navn som starter på «eu-», ligger utenfor EØS (for eksempel London og Zürich) og er holdt utenfor lista.</p>
+            <p>Rutingen kan endres fra et administrasjonspanel, og en residensgaranti som bare ligger i konfigurasjonen, kan brytes av en tastefeil. Derfor sjekker gatewayen før hvert kall at base-URL-en i rutekonfigurasjonen er en kjent EU-vert i streng form, uten egen sti eller parametre som kunne styrt kallet mot et annet API på samme vert (stien til selve modellkallet legger koden til). Den sjekker også at modellen står på en tillatelsesliste over versjonsfestede modeller som er bekreftet å kjøre uten lagring, og at forespørselen ikke ber om leverandørfunksjoner som lagrer innhold. Avvisningen gir en generisk feilkode.</p>
+            <h3 id="et-flagg-er-ikke-en-kontroll">Et flagg er ikke en kontroll</h3>
+            <p>En intern sikkerhetsgjennomgang viste at residenskontrollen slapp oppgaver med personopplysninger til ruter merket «EU», men merket var bare et felt i en tabell. En reserverute uten eksplisitt adresse ville falt tilbake til leverandørens globale endepunkt, samtidig som den var merket EU og loggen sa «eu».</p>
+            <p>Nå regnes en rute som EU bare når den samme kontrollen i koden godkjenner den faktiske adressen. Står ingen rute igjen, gir gatewayen et hardt avslag og varsler driften i stedet for å falle stille tilbake til noe mindre strengt. Den samme regelen håndheves når rutene skrives til databasen, og feilen tas dermed både ved inngangen og ved bruk.</p>
+            <figure class="afig" id="fig-flagg" data-fig="flagg" data-tittel="Et flagg er ikke en kontroll">
+              <div class="fig-flate"><p>Før stolte systemet på et EU-merke i en tabell. Nå sjekker koden den faktiske adressen, og uten godkjent rute avvises kallet og driften varsles.</p></div>
+              <figcaption><span class="fig-nr">Figur 6</span>Et merke i en tabell er en påstand. Kontrollen i koden avgjør om ruten faktisk er EU.</figcaption>
+            </figure>
+            <h3 id="nar-modellen-endrer-seg">Når modellen endrer seg</h3>
+            <p>Modell-id-ene er versjonsfestet. En ny modell eller versjon tas i bruk først når den er lagt på tillatelseslista sammen med en test, red team-suiten er kjørt på nytt, og lagring og residens er vurdert for akkurat den modellen. Leverandørene endrer vilkår og tilbud over tid, så lista går jeg gjennom jevnlig.</p>
+            <h2 id="klassifisering-og-logging">Klassifisering og logging</h2>
+            <p>Hver KI-funksjon har en personvernklasse som avgjør om innholdet kan logges og om residenskravet gjelder. Det viktigste er hvilken vei standardverdien peker. En funksjon som ingen har klassifisert, behandles som den strengeste klassen: innholdet logges ikke, og den får bare bruke godkjente EU-ruter. «Ingen personopplysninger» må velges og begrunnes, og en katalogdrevet test krever at hver funksjon med den klassen står på en liste med begrunnelse.</p>
+            <p>Hvert modellkall logges med oppgave, modell, region, status, tidsbruk, forbruk og en korrelasjons-id som binder sammen rundene i én brukermelding. Innhold logges bare for funksjoner uten personopplysninger, og regelen gjelder alt som er avledet av innholdet: rå inndata, prompten og modellens svar. Jeg tester den på det som skrives, ikke bare på kolonnenavnene.</p>
+            <p>Metadata kan også være personopplysninger. Oppgavetype, tidspunkt, brukerreferanse og virksomhet kan sammen si mye uten at en eneste setning er lagret. Jeg behandler KI-loggen som et register med personopplysninger: den brukes bare til drift, kost og misbruksdeteksjon, bare de som drifter plattformen kan lese den, og oppbevaringstiden hentes fra registeret over juridiske verdier.</p>
+            <p>Loggen har ingen egen kolonne for virksomheten. Forbruk per virksomhet telles i egne tellere avgrenset per virksomhet, slik at plattformloggen ikke blir en vei rundt isolasjonen mellom kundene.</p>
+            <p>Feil mappes til faste koder før de forlater systemet, og hemmeligheter logges ikke. Endringer i data skriver en revisjonshendelse via databasetriggere, også når endringen kom etter et KI-forslag, uavhengig av tjenestelogikken og uten fritekst.</p>
+            <h2 id="innlogging-og-token">Innlogging og token</h2>
+            <p>Når sikkerheten hviler på brukerens identitet, blir innloggingen en del av KI-sikkerheten. Et stjålet token gir ikke modellen mer enn brukeren har, men det gir angriperen alt brukeren har.</p>
+            <p>En hastighetsgrense per IP-adresse gjør lite mot passordspraying fra mange adresser. Mislykkede innlogginger går inn i overvåkingen, og jeg foretrekker gradvis bremsing, CAPTCHA og tofaktor fremfor å låse kontoer, fordi kontolåsing gir angriperen en knapp for å stenge ute andre. Administratorer bruker tofaktor, og kritiske handlinger krever fersk bekreftelse.</p>
+            <p>Et signert tilgangstoken er gyldig til det utløper, og utlogging eller passordbytte betyr ikke automatisk at det slutter å virke mot databasen. Det som står i tokenet, følger tokenets levetid. Det gjelder hvilken virksomhet brukeren er logget inn i, så et bytte av virksomhet krever et nytt token. Tilgangene står derimot ikke i tokenet. Radpolicyene slår dem opp i tabeller ved hvert oppslag, sammen med om profilen er aktiv og om nødbremsen er trukket, så en fjernet tilgang eller en deaktivert bruker virker på det levende tokenet. Levetiden på tilgangstokenet er et bevisst valg, og der virksomheten eller brukeren har satt en øktgrense, slår databasen også opp økta ved hvert kall og avviser tokenet når økta er borte eller for gammel. Brukeren og virksomheten har i tillegg en nødbrems som kutter tilgangen umiddelbart.</p>
+            <p>Utlogging, utløp og deaktivering tester jeg med ekte token fra den vanlige innloggingen: logg inn, gjør handlingen, prøv det gamle tokenet igjen.</p>
+            <h2 id="kost-og-misbruk">Kost og misbruk</h2>
+            <p>KI koster per kall, og en løkke som kommer ut av kontroll, kan koste mye før noen merker det. Hver forespørsel har tak på lengde, verktøyrunder, svarstørrelse og tid. Hver bruker og hver virksomhet har tak som sjekkes i databasen før modellen kalles, og den administrerte tjenesten har månedskvoter med mykt varsel før den harde stoppen. Antall nye virksomheter per tidsenhet har også et tak, slik at kastekontoer ikke kan bruke opp ressurser på prøveperioder.</p>
+            <p>Kvoten reserveres atomisk før kallet, med én betinget oppdatering som bare lykkes hvis det er plass, og taket per virksomhet serialiseres med en lås. To samtidige meldinger kan dermed ikke begge passere før telleren er oppdatert. Kvoten trekkes per brukermelding, fordi én melding kan gi flere modellrunder, og «X kall i måneden» ellers ville betydd langt færre samtaler enn kunden tror. Runder, tokens og pris følges for seg i loggen. I generisk form ser reservasjonen slik ut:</p>
+            <pre class="kode"><code class="lang-sql">-- Reserver én enhet. Oppdateringen skjer bare hvis telleren er under taket.
+            insert into usage_counter (tenant_id, period, used)
+            values (:tenant_id, :period, 1)
+            on conflict (tenant_id, period) do update
+               set used = usage_counter.used + 1
+             where usage_counter.used &lt; :quota
+            returning used;
+            -- Ingen rad tilbake: taket er nådd, og modellen kalles ikke.</code></pre>
+            <p>Over dette ligger en automatisk nødstopp (circuit breaker). En tidsstyrt jobb sammenligner det samlede forbruket med tak, budsjett og tidligere toppdager, stopper all KI ved uvanlig forbruk til et menneske åpner igjen, og varsler driften. Takene per virksomhet er satt godt under det som utløser nødstoppen, slik at én kunde alene ikke kan stenge KI for de andre. Nødstoppen er siste sikkerhetsnett mot systemiske feil og er ikke et absolutt kostnadstak, fordi det kan påløpe kostnader mellom to kjøringer. Bryter brukeren forbindelsen, avbrytes kallet til modellen der plattformen og leverandøren støtter det.</p>
+            <p>Hvert lag har et bevisst valg mellom fail open og fail closed, og når et vern ikke kan gjøre jobben sin, skal det si fra med en logglinje og et varsel som beskriver hva som skjer. Det gjelder også selve tellingen. En nødstopp som teller loggrader, er blind i det øyeblikket loggskrivingen feiler, så en rad som ikke kan skrives, må selv behandles som en alarm.</p>
+            <h2 id="red-teaming">Red teaming</h2>
+            <h3 id="type-svikt-og-alvorlighet-er-to-forskjellige-ting">Type svikt og alvorlighet er to forskjellige ting</h3>
+            <p>Grensetester spør om angriperen kan få data hen ikke har rett til, selv om modellen adlyder fullt ut. Atferdstester spør om modellen oppførte seg slik den skal.</p>
+            <p>Typen svikt sier likevel ikke alt om hvor alvorlig den er. En assistent som svarer som en pirat, er en atferdsfeil med lav alvorlighet. Et feil råd med konsekvenser for sikkerhet, eller en uriktig statusmelding om at en påkrevd kontroll er gjennomført, bryter heller ingen tilgangskontroll, men kan være kritisk, fordi integritet veier like tungt som konfidensialitet. Et grensebrudd er alltid kritisk, men en atferdsfeil kan også være det, og da stopper den en utgivelse på samme måte.</p>
+            <p>Trusler vekter jeg etter både alvor og sannsynlighet. Datalekkasje på tvers av virksomheter er mest alvorlig, men lite sannsynlig når grensen ligger i databasen. Mest sannsynlig er en kollega som skriver en instruks om å svare som en pirat i et felt assistenten ofte leser. Ingen data lekker, men produktet ser manipulerbart ut, så testene dekker også det.</p>
+            <h3 id="tre-nivaer-av-testing">Tre nivåer av testing</h3>
+            <p>Orakelet som avgjør om en test besto, kan være deterministisk (en bestemt streng i svaret eller ikke) selv om utfallet varierer fra kjøring til kjøring når angrepet sendes til en ekte modell. Derfor tester jeg grensen på tre nivåer:</p>
+            <ol>
+            <li>Direkte autorisasjonstester. Database og API kalles uten modell, som uinnlogget, som en annen virksomhet, med deaktivert konto. Hva som testes, utledes fra databasekatalogen, så nye tabeller og funksjoner kommer med automatisk.</li>
+            <li>En simulert kompromittert modell. I stedet for å prøve å få en ekte modell til å gjøre noe ulovlig, lar jeg en simulert modell prøve hver gang: be om verktøy den ikke fikk, sende ugyldige argumenter, oppgi id-er fra en annen virksomhet. Dette er den sterkeste testen av arkitekturen, fordi den ikke avhenger av at angrepet lykkes mot modellen.</li>
+            <li>Red teaming med en ekte modell. Angrepskorpuset kjøres mot assistenten for å se hvordan modellen faktisk oppfører seg. Det sier noe om atferdsvernet under testbetingelsene og beviser ikke hva som er umulig.</li>
+            </ol>
+            <figure class="afig" id="fig-testnivaer" data-fig="testnivaer" data-tittel="Tre nivåer av testing">
+              <div class="fig-flate"><p>Tre testnivåer: autorisasjonstester uten modell, en simulert fiendtlig modell, og red teaming mot en ekte modell.</p></div>
+              <figcaption><span class="fig-nr">Figur 7</span>De to nederste nivåene tester arkitekturen uansett hva modellen gjør. Det øverste viser hvordan modellen faktisk oppfører seg.</figcaption>
+            </figure>
+            <p>Angrepskategoriene er forankret i offentlig kjente teknikker, blant annet OWASPs liste for språkmodellapplikasjoner. Konkrete testtekster holder jeg utenfor.</p>
+            <p>For å gi et inntrykk av omfanget: grensen dekkes av rundt 1 800 automatiske databasetester, og de nettverksrettede testene har så langt kjørt over 45 000 kontroller som uinnlogget bruker, som bruker med smal tilgang og på tvers av virksomheter. Korpuset mot den ekte modellen har 30 scenarioer i 12 angrepsklasser, og ingen kanariverdi har lekket i noen kjøring.</p>
+            <h3 id="kanariverdier-og-andre-orakler">Kanariverdier og andre orakler</h3>
+            <p>Kanariverdier (canary tokens) er unike strenger som ikke kan gjettes. De plantes i beskyttede data i syntetiske testvirksomheter: i sensitive felt og i en nabovirksomhet. Angrepene ber om nettopp disse. Dukker en kanariverdi opp noe sted i svaret, er det et bekreftet grensebrudd, og orakelet normaliserer svaret først. En kanariverdi som er splittet av usynlige tegn eller kodet, blir også funnet. Fravær av kanariverdi beviser derimot ikke at ingenting har lekket, fordi modellen kan ha oppsummert eller omskrevet innholdet.</p>
+            <p>Instruksuttrekk fanges på samme måte, med en fast, ufarlig markør i instruksene som ikke skal stå i noe svar. For atferd ser mønsterorakler etter en adresse i svaret, en befaling i noens navn, en persona eller et sikkerhetsråd modellen har formulert selv i stedet for å hente fra dataene. Når en ikke-kritisk test feiler, kan en modell skrive en kort forklaring til testrapporten, men inn- og utdata sjekkes for kanariverdier først, og et grensebrudd sendes ikke til en modell for vurdering.</p>
+            <h3 id="hvor-det-kjorer">Hvor det kjører</h3>
+            <p>Red teamet kjører ikke mot produksjon og ikke med ekte data. Testvirksomhetene er permanente, tydelig merket og syntetiske, og en hemmelighet som bare finnes i testmiljøet, sperrer testen mot assistenten fra å kjøre andre steder. En automatisert sikkerhetsskanner tester nettverksflatene som uinnlogget bruker og som administrator i en annen virksomhet. Destruktive tester kjører bare mot en kortlivet, lokal database.</p>
+            <p>Modellsvarene lagres ikke, bare dommen. Testene mot ekte modell kjører etter endringer i KI-flaten, ved modellbytte og på fast frekvens, fordi atferden kan endre seg stille også bak en versjonsfestet modell-id. De deterministiske testene kjører hver gang databasen endres. Bekreftede funn blir regresjonstester.</p>
+            <h3 id="testene-ma-testes">Testene må testes</h3>
+            <p>Flere av de viktigste lærdommene handlet om testene. En test forbød en bestemt kontaktinformasjon i svaret, mens policyen krever at den står der ordrett. Den falske røde undergravde tilliten til testoversikten like mye som en falsk grønn ville gjort.</p>
+            <p>I et lokalt miljø kan testbrukere mangle virksomhetstilhørighet, og da nekter all tilgangskontroll trivielt, så testene ser rene ut uten å teste noe. De destruktive testene har en positiv kontroll som sjekker at det lovlige lykkes.</p>
+            <p>En gang var et «kritisk» funn en feilkode som tilfeldigvis sto som sifre i et tidsstempel. Siden verifiserer jeg hvert kritisk funn før det behandles som ekte. Når svaret får en ny kanal, for eksempel en ny korttype, må lekkasjesjekken dekke den i samme endring.</p>
+            <h2 id="personvern-og-ki-forordningen">Personvern og KI-forordningen</h2>
+            <p>KI-forordningen innføres trinnvis. I EU har forbudene i art. 5 gjeldt siden februar 2025, og transparenspliktene i art. 50 har gjeldt siden august 2026. Den norske gjennomføringen er under arbeid, og GDPR gjelder uansett. Jeg bygget etter transparenspliktene fra starten, fordi det var billig da og dyrt å ettermontere: assistenten sier tydelig at den er en KI, og skrivehandlinger har et menneske i løkka.</p>
+            <p>Noen grenser er produktvalg som går lenger enn loven krever. KI skal ikke evaluere eller rangere enkeltansatte, og det gjøres ingen emosjons- eller sentimentanalyse av ansattes tale eller tekst. Art. 5 forbyr følelsesgjenkjenning på arbeidsplassen, og forordningen stiller strenge krav til mer av dette, men jeg har valgt å holde hele området utenfor, også der det kunne vært lovlig med riktig dokumentasjon.</p>
+            <p>Menneskelig godkjenning dokumenterer ikke etterlevelse alene. Den tekniske delen må følges av underdatabehandlerkjede, behandlingsprotokoll og konsekvensvurdering.</p>
+            <h2 id="ikke-alt-trenger-en-sprakmodell">Ikke alt trenger en språkmodell</h2>
+            <p>Et problem som kan beskrives med regler, løser jeg best uten modell: planlegging etter faste kriterier, beregninger, frister og en stemmestyrt registrering som tolker det brukeren sier steg for steg. En deterministisk løsning gir samme svar på samme input, har ingen kostnad per modellkall, er ikke utsatt for prompt injection og er lettere å teste. Da stemmestyringen ikke forsto brukerne godt nok, målte jeg hva de faktisk sa og gjorde tolkningen mer tolerant, i stedet for å legge inn en modell.</p>
+            <h2 id="kontroller-som-fanger-neste-feil">Kontroller som fanger neste feil</h2>
+            <p>De fleste lærdommene gjør jeg om til automatiske kontroller. En tilgangsregel testes mot databasen der den håndheves, aldri mot en håndskrevet kopi i en testdobbel. Når jeg finner en feil, spør jeg hvordan neste feil av samme type blir rød. En manglende tilgangssjekk i én KI-funksjon ble til en kontroll som krever sjekken i alle. For mønstre som ikke kan rettes på én gang, teller en kontroll antallet og godtar bare at det synker.</p>
+            <p>En sikkerhetstest regnes som ferdig først når jeg har sett den feile mot en bevisst ødelagt tilstand, og kontrollene i byggekjeden har selvtester med saboterte kopier. En test som prøver handlingen, veier tyngre enn en som leser kildeteksten etter et mønster. Før en ny sikkerhetskritisk flate tas i bruk, går en egen KI-agent med separat kontekst gjennom den, og den må bevise hvert funn med en test som feiler. Det gir en uavhengig lesning av koden, men erstatter ikke en ekstern, menneskelig sikkerhetsrevisjon.</p>
+            <p>Hver sikkerhetspåstand i denne teksten har jeg sjekket mot koden. At en logg mangler en kolonne for virksomheten, betyr ikke at den ikke kan kobles til en virksomhet, og «én inngang» må stemme for hvert eneste kall.</p>
+            <h2 id="hva-arkitekturen-ikke-loser">Hva arkitekturen ikke løser</h2>
+            <p>Arkitekturen flytter mye risiko fra modellen til kontroller som kan testes. Noe står likevel igjen i ethvert system som gir en språkmodell tilgang til virksomhetsdata.</p>
+            <ul>
+            <li>Hallusinasjoner. En modell kan formulere noe feil med stor sikkerhet, også når dataene er riktige. Kort bygget fra dataene og henvisning til kilden reduserer problemet uten å fjerne det.</li>
+            <li>Autorisert misbruk. En bruker med legitim tilgang kan finne og sammenstille det hen har lov til å se, raskere enn før. Tilgangskontrollen ser ingenting galt.</li>
+            <li>Lekkasje etter legitim utlevering. Det som er vist, kan kopieres, fotograferes eller videresendes.</li>
+            <li>Semantisk lekkasje. Et svar kan avsløre noe uten å gjengi det: et aggregat, en omskrivning eller en antydning. To aggregater over grupper som skiller seg med én person, kan trekkes fra hverandre selv om begge ligger over minste gruppestørrelse. Kanariverdier og mønsterorakler ser bare det de kjenner igjen.</li>
+            <li>Leverandørrisiko. Modell- og skyleverandøren kan endre atferd, vilkår eller tilbud, eller selv bli kompromittert. Versjonsfesting, avtaler og jevnlig ny vurdering begrenser risikoen, men koden kan ikke håndheve den bort.</li>
+            </ul>
+            <p>Rekkefølgen har vært den samme fra starten: grensen og kontrollen først, så funksjonen. Det koster tid, men det har gjort at funnene fra red teaming og gjennomganger stort sett har gjeldt dybdeforsvaret, ikke den primære grensen.</p>
+            <h2 id="kilder">Kilder</h2>
+            <ul>
+            <li>OWASP GenAI Security Project: <em>OWASP Top 10 for LLM Applications</em>. <a href="https://genai.owasp.org/">genai.owasp.org/</a></li>
+            <li>NCSC (Storbritannia): <em>Prompt injection is not SQL injection (it may be worse)</em> (desember 2025). <a href="https://www.ncsc.gov.uk/blog-post/prompt-injection-is-not-sql-injection">www.ncsc.gov.uk/blog-post/prompt-injection-is-not-sql-injection</a></li>
+            <li>Simon Willison: <em>The lethal trifecta for AI agents: private data, untrusted content, and external communication</em> (juni 2025). <a href="https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/">simonwillison.net/2025/Jun/16/the-lethal-trifecta/</a></li>
+            <li>PostgreSQL-dokumentasjonen: <em>Row Security Policies</em>. <a href="https://www.postgresql.org/docs/current/ddl-rowsecurity.html">www.postgresql.org/docs/current/ddl-rowsecurity.html</a></li>
+            <li>AWS-dokumentasjonen for Bedrock: <em>Cross-Region inference</em>. <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html">docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html</a></li>
+            <li>AWS-dokumentasjonen for Bedrock: <em>Data retention</em>, <em>Data protection</em> og <em>Model invocation logging</em>. <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html">docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html</a>, <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/data-protection.html">docs.aws.amazon.com/bedrock/latest/userguide/data-protection.html</a> og <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html">docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html</a></li>
+            <li>Personvernforordningen (GDPR), forordning (EU) 2016/679. <a href="https://eur-lex.europa.eu/eli/reg/2016/679/oj">eur-lex.europa.eu/eli/reg/2016/679/oj</a></li>
+            <li>KI-forordningen, forordning (EU) 2024/1689. <a href="https://eur-lex.europa.eu/eli/reg/2024/1689/oj">eur-lex.europa.eu/eli/reg/2024/1689/oj</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <footer class="art-foot">
+          <img src="../assets/portrett.jpg" width="72" height="72" alt="">
+          <div>
+            <span class="navn">Vegard Cowie Jørgensen</span>
+            <p>Datasikkerhet og agentisk koding. Jeg bygger verktøy som lar KI-agenter jobbe lenge og selvstendig, med kontroller, sporbarhet og kostnad under oppsyn.</p>
+            <p class="lenker"><a href="../index.html">Til forsiden</a> · <a href="https://github.com/vegardjorg">GitHub</a></p>
+          </div>
+        </footer>
+      </article>
+    </main>
+    <p class="site-foot">Publisert <time datetime="2026-11-27">27. november 2026</time></p>
+  </div>
+
+  <script src="../assets/js/fig-motor.js"></script>
+  <script src="../assets/js/fig-artikkel-ki.js"></script>
+  <script>
+    FIG.start();
+
+    /* Innholdsfortegnelse: åpen og fast på bred skjerm, lukket på smal. Marker kapitlet man leser. */
+    (function () {
+      var d = document.getElementById('toc-d'), mq = window.matchMedia('(max-width: 1000px)');
+      function sett() { d.open = !mq.matches; }
+      sett(); if (mq.addEventListener) mq.addEventListener('change', sett);
+      d.querySelector('summary').addEventListener('click', function (e) { if (!mq.matches) e.preventDefault(); });
+      d.addEventListener('click', function (e) { if (e.target.closest('a') && mq.matches) d.open = false; });
+      var lenker = {}, h2 = document.querySelectorAll('.art-body h2[id]');
+      Array.prototype.forEach.call(d.querySelectorAll('a'), function (a) { lenker[a.getAttribute('href').slice(1)] = a; });
+      function oppdater() {
+        var gjeldende = null;
+        Array.prototype.forEach.call(h2, function (h) { if (h.getBoundingClientRect().top < 140) gjeldende = h.id; });
+        Object.keys(lenker).forEach(function (k) { lenker[k].setAttribute('aria-current', k === gjeldende ? 'true' : 'false'); });
+      }
+      var venter = false;
+      window.addEventListener('scroll', function () { if (!venter) { venter = true; requestAnimationFrame(function () { venter = false; oppdater(); }); } }, { passive: true });
+      oppdater();
+    })();
+
+    /* Tema: samme nøkkel som forsiden */
+    (function () {
+      var root = document.documentElement, btn = document.getElementById('theme');
+      function erMork() { var t = root.getAttribute('data-theme'); return t ? t === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches; }
+      function merk() { btn.setAttribute('aria-label', erMork() ? 'Bytt til lyst tema' : 'Bytt til mørkt tema'); }
+      btn.addEventListener('click', function () {
+        var ny = erMork() ? 'light' : 'dark';
+        root.setAttribute('data-theme', ny);
+        try { localStorage.setItem('in-theme', ny); } catch (e) {}
+        merk();
+      });
+      merk();
+    })();
+  </script>
+</body>
+</html>
