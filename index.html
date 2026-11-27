@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Vegard Cowie Jørgensen</title>
-  <meta name="description" content="Vegard Cowie Jørgensen: datasikkerhet, agentisk koding, artikler om sikkerhetsarkitektur og KI, og interaktive eksamensguider for IN2010, IN2090 og IN2120.">
+  <meta name="description" content="Vegard Cowie Jørgensen: datasikkerhet, agentisk koding, artikler om sikkerhetsarkitektur og KI, og Ravenseat.">
   <link rel="stylesheet" href="assets/css/figurer.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232f5d8a'/%3E%3Ctext x='16' y='22' font-family='Segoe UI,Arial,sans-serif' font-size='15' font-weight='700' text-anchor='middle' fill='%23fff'%3EVCJ%3C/text%3E%3C/svg%3E">
   <!-- Samme temanøkkel som guidene (samme origin), så valget følger med. -->
@@ -185,20 +185,6 @@
     .interest .mini li + li { margin-top: 4px; }
     .interest .mini b { color: var(--on-surface); font-weight: 600; }
 
-    /* Prosjektkort */
-    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-    @media (max-width: 720px) { .cards { grid-template-columns: 1fr; } }
-    .card {
-      display: flex; flex-direction: column; gap: 6px;
-      border: 1px solid var(--outline-variant); border-radius: var(--radius-md);
-      padding: 16px; text-decoration: none; color: inherit; background: var(--sheet);
-      transition: border-color .15s, transform .15s;
-    }
-    .card:hover { border-color: var(--primary); transform: translateY(-2px); }
-    .card:hover .go { text-decoration: underline; }
-    .code { font: 700 13px/1 var(--font-mono); color: var(--on-primary-container); background: var(--primary-container); padding: 5px 8px; border-radius: var(--radius); align-self: flex-start; }
-    .card h3 { margin: 6px 0 0; font-size: 16px; line-height: 1.35; }
-    .card p { margin: 0; font-size: 14px; color: var(--on-surface-variant); flex: 1; }
     .go { font-size: 14px; font-weight: 600; color: var(--primary); }
 
     /* Ravenseat */
@@ -262,7 +248,6 @@
     .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top left; transition: transform .35s ease, opacity .2s; }
     .thumb:hover img { transform: scale(1.03); }
     .thumb:hover { border-color: var(--primary); }
-    .sec-note { margin: -4px 0 14px; font-size: 15px; color: var(--on-surface-variant); }
 
     /* Visning (lysboks) */
     .viewer {
@@ -337,7 +322,6 @@
               GitHub
             </a>
             <a class="btn" href="#artikler">Artikler</a>
-            <a class="btn" href="#skole">Skoleprosjekter</a>
             <a class="btn" href="#ravenseat">Ravenseat</a>
           </div>
         </div>
@@ -385,36 +369,8 @@
         </div>
       </section>
 
-      <section id="skole" aria-labelledby="skole-h">
-        <div class="sechead"><h2 id="skole-h">Skoleprosjekter</h2><p>Interaktive eksamensguider</p></div>
-        <p class="sec-note">Bygget så enkelt som mulig, med ren HTML, CSS og vanilla JavaScript. Ingen rammeverk og ingen byggesteg, så guidene kan hostes rett på GitHub Pages.</p>
-        <div class="cards">
-          <a class="card" href="https://vegardjorg.github.io/IN2010/">
-            <span class="code">IN2010</span>
-            <h3>Algoritmer og datastrukturer</h3>
-            <p>Sortering, søk, heap, trær, hashing og grafer, med visualiseringer du kan styre selv.</p>
-            <span class="built">Built with Claude</span>
-            <span class="go">Åpne guiden →</span>
-          </a>
-          <a class="card" href="https://vegardjorg.github.io/IN2090/">
-            <span class="code">IN2090</span>
-            <h3>Databaser og datamodellering</h3>
-            <p>ER-modellering, relasjonsalgebra, SQL, normalisering, sikkerhet og indekser.</p>
-            <span class="built">Built with Claude</span>
-            <span class="go">Åpne guiden →</span>
-          </a>
-          <a class="card" href="https://vegardjorg.github.io/IN2120/">
-            <span class="code">IN2120</span>
-            <h3>Informasjonssikkerhet</h3>
-            <p>Krypto, PKI, angrep, autentisering, IAM og nettverk, knyttet til eksamensoppgavene H2021–H2025.</p>
-            <span class="built">Built with Claude</span>
-            <span class="go">Åpne guiden →</span>
-          </a>
-        </div>
-      </section>
-
       <section id="ravenseat" aria-labelledby="andre-h">
-        <div class="sechead"><h2 id="andre-h">Andre prosjekter</h2></div>
+        <div class="sechead"><h2 id="andre-h">Prosjekter</h2></div>
         <div class="project">
           <div class="project-head">
             <div>
