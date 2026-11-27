@@ -274,7 +274,7 @@
 
   /* ---------- 6. The lethal trifecta, broken ---------- */
   F.FIGURER.trekant = function (host, meta) {
-    var s = F.svg(host, { w: 480, h: 450, tittel: meta.tittel, desc: meta.desc, klasse: "fig-kvadrat" });
+    var s = F.svg(host, { w: 480, h: 474, tittel: meta.tittel, desc: meta.desc, klasse: "fig-kvadrat" });
     var A = [240, 92], B = [78, 352], C = [402, 352];
     function pt(p, q, t) { return [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]; }
     function brutt(p, q) {
@@ -297,8 +297,8 @@
     var dor = F.g(s, "fig-dempet");
     F.boks(dor, C[0] - 15, C[1] - 24, 30, 46, "", { tone: "rod", fyll: "tone", r: 2 });
     F.pil(dor, [[C[0] + 2, C[1]], [C[0] + 34, C[1]]], { tone: "rod" });
-    T(s, C[0], 396, "A way out: removed", { fet: true, tone: "rod" });
-    T(s, C[0], 424, "no links, images\nor calls from the model", L);
+    T(s, C[0], 396, "The model's way out:\nremoved", { fet: true, tone: "rod" });
+    T(s, C[0], 446, "no links, images\nor calls from the model", L);
     // No links or images from the model
     function overstrek(cx, cy) { F.linje(s, [[cx - 16, cy + 14], [cx + 16, cy - 14]], { tone: "rod", bred: true }); }
     var l = F.g(s, null, "translate(398 250) rotate(-35)");
