@@ -91,7 +91,8 @@
           </nav>
 
           <div class="art-body" id="tekst">
-            <p>En KI-assistent i et fagsystem ser fort ut som et lite under. Brukeren spør hva som er forfalt, hvor et dokument ligger, eller ber om hjelp til å fylle ut et skjema. Bak spørsmålene ligger saker, dokumenter og personalopplysninger, fordelt på mange virksomheter som deler samme system. Assistenten er samtidig en komponent som ikke pålitelig skiller instrukser fra data, og som får lov til å slå opp i nettopp disse opplysningene.</p>
+            <p>En KI-assistent i et fagsystem ser fort ut som et lite under. Brukeren spør hva som er forfalt, hvor et dokument ligger, eller ber om hjelp til å fylle ut et skjema. Bak spørsmålene ligger saker, dokumenter og personalopplysninger, fordelt på mange virksomheter som deler samme system.</p>
+            <p>Det er et grunnleggende arkitekturproblem. Vanlig programvare gjør det utviklerne har skrevet. En språkmodell kan styres av de samme dataene den skal behandle, fordi den ikke pålitelig skiller instrukser fra data, og likevel får assistenten slå opp i nettopp disse opplysningene. Antakelsen om at applikasjonens egne komponenter er til å stole på, holder ikke for en slik komponent.</p>
             <p>Her beskriver jeg hvordan jeg har bygget og testet en slik assistent: hvor jeg har lagt sikkerhetsgrensen, hvordan jeg lagdeler vernet mot prompt injection, og hvordan jeg prøver å få systemet til å svikte med vilje. Mye av det nyttigste jeg har lært, kom fra feil jeg fant i egne antakelser og i testene som skulle fange dem. All testing jeg beskriver, er gjort i et staging-miljø med fiktive data, og feilene ble funnet og rettet der, før de nådde produksjon.</p>
             <aside class="oppsummert" aria-labelledby="kort-oppsummert">
             <p class="oppsummert-t" id="kort-oppsummert">Kort oppsummert</p>

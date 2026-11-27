@@ -91,7 +91,8 @@
           </nav>
 
           <div class="art-body" id="tekst">
-            <p>An AI assistant in a business system can easily seem like a small miracle. The user asks what is overdue, where a document is, or for help filling in a form. Behind those questions sit cases, documents and personnel data, spread across many organizations that share the same system. At the same time, the assistant is a component that cannot reliably tell instructions from data, and it is allowed to look up exactly this information.</p>
+            <p>An AI assistant in a business system can easily seem like a small miracle. The user asks what is overdue, where a document is, or for help filling in a form. Behind those questions sit cases, documents and personnel data, spread across many organizations that share the same system.</p>
+            <p>That is a fundamental architectural problem. Ordinary software does what its developers wrote. A language model can be steered by the very data it is meant to process, because it cannot reliably tell instructions from data, and yet the assistant is allowed to look up exactly this information. The usual assumption that an application's own components can be trusted does not hold for such a component.</p>
             <p>Here I describe how I built and tested such an assistant: where I put the security boundary, how I layer the defenses against prompt injection, and how I deliberately try to make the system fail. Many of the most useful lessons came from errors I found in my own assumptions and in the tests that were supposed to catch them. All the testing I describe was done in a staging environment with fictitious data, and the flaws were found and fixed there, before they reached production.</p>
             <aside class="oppsummert" aria-labelledby="in-short">
             <p class="oppsummert-t" id="in-short">In short</p>
