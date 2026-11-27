@@ -53,7 +53,7 @@
             <img src="../assets/portrett.jpg" width="52" height="52" alt="Portrett av Vegard Cowie Jørgensen">
             <div>
               <span class="navn">Vegard Cowie Jørgensen</span>
-              <span class="meta">Publisert <time datetime="2026-11-27">27. november 2026</time> · ca. 26 min lesing</span>
+              <span class="meta">Publisert <time datetime="2026-11-27">27. november 2026</time> · ca. 27 min lesing</span>
             </div>
           </div>
         </header>
@@ -152,6 +152,7 @@
             <li><strong>Databasen.</strong> Oppslaget kjøres med brukerens identitet, slik at RLS gjelder uansett hva de tre første leddene slapp gjennom.</li>
             </ol>
             <p>Det siste leddet gjør resten til dybdeforsvar. Slipper en feil i registeret eller valideringen et kall gjennom, får det bare rader brukeren kunne lest selv.</p>
+            <p>Verktøyene beskrives for modellen med et JSON-skjema, og et kall kommer tilbake som en egen blokk med et JSON-objekt, atskilt fra svarteksten. Serveren leser kallene fra denne strukturen og tolker aldri fritekst som kommandoer. Skjemaet styrer hva modellen prøver å sende, men håndhever ingenting, så argumentene behandles som upålitelig input, som fra et skjema på nettet: bare kjente felt leses, verdier fra faste lister kontrolleres, og kategorier slås opp mot virksomhetens egen liste. Stopper svaret midt i et kall fordi lengdetaket er nådd, kjøres kallet ikke.</p>
             <p>Brukerens lesetilgang setter et tak, men sier ikke hva assistenten trenger. En ansatt kan ha lov til å åpne hundre saker, mens et spørsmål om hva som er forfalt, bare trenger tittel, frist og status. Hvert verktøy er laget for én oppgave og henter bare de feltene oppgaven trenger, aldri hele rader, med tak på antall rader. Det gir modellen mindre å gjengi feil, mindre upålitelig tekst å bli styrt av og færre opplysninger hos leverandøren.</p>
             <p>De mest sensitive områdene, som grenser mot særlige kategorier av personopplysninger, har ingen verktøy i det hele tatt. Der det trengs innsikt, gir jeg aggregater og status i stedet for fritekst, og et aggregat over en liten gruppe holdes tilbake under en minste gruppestørrelse, slik at et enkelt aggregat ikke peker ut enkeltpersoner. Sammenstilling av flere aggregater er omtalt under semantisk lekkasje.</p>
             <p>Noen svar bør heller ikke formuleres av en modell. Gjelder spørsmålet noe akutt der et feil råd kan få konsekvenser for sikkerheten, improviserer assistenten ikke. Den viser kilden og relevant kontaktinformasjon som kort, og de kritiske opplysningene vises deterministisk fra dataene.</p>

@@ -53,7 +53,7 @@
             <img src="../assets/portrett.jpg" width="52" height="52" alt="Portrait of Vegard Cowie Jørgensen">
             <div>
               <span class="navn">Vegard Cowie Jørgensen</span>
-              <span class="meta">Published <time datetime="2026-11-27">27 November 2026</time> · about 30 min read</span>
+              <span class="meta">Published <time datetime="2026-11-27">27 November 2026</time> · about 31 min read</span>
             </div>
           </div>
         </header>
@@ -152,6 +152,7 @@
             <li><strong>The database.</strong> The query runs with the user's identity, so RLS applies no matter what the first three stages let through.</li>
             </ol>
             <p>The last stage turns the rest into defense in depth. If a bug in the registry or the validation lets a call through, it only gets rows the user could have read anyway.</p>
+            <p>The tools are described to the model with a JSON schema, and a call comes back as a separate block with a JSON object, apart from the response text. The server reads the calls from this structure and never interprets free text as commands. The schema steers what the model tries to send but enforces nothing, so the arguments are treated as untrusted input, like a form on the web: only known fields are read, values from fixed lists are checked, and categories are looked up against the organization's own list. If the response stops in the middle of a call because the length limit has been reached, the call is not run.</p>
             <p>The user's read access sets a ceiling, but it does not say what the assistant needs. An employee may be allowed to open a hundred cases, while a question about what is overdue only needs title, due date and status. Each tool is built for one task and fetches only the fields that task needs, never whole rows, with a cap on the number of rows. That gives the model less to repeat incorrectly, less untrusted text to be steered by, and less information sitting with the vendor.</p>
             <p>The most sensitive areas, those bordering on special categories of personal data, have no tools at all. Where insight is needed, I provide aggregates and status instead of free text, and an aggregate over a small group is withheld below a minimum group size, so that a single aggregate does not single out individuals. Combining several aggregates is covered under semantic leakage.</p>
             <p>Some answers should not be phrased by a model either. If the question concerns something urgent where bad advice can have safety consequences, the assistant does not improvise. It shows the source and the relevant contact information as a card, and the critical information is rendered deterministically from the data.</p>
