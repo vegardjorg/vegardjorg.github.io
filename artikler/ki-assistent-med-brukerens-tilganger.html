@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Når KI-en bare får lov til det brukeren får lov til · Vegard Cowie Jørgensen</title>
-  <meta name="description" content="Erfaringer med sikkerhetsarkitektur, prompt injection og red teaming i et skybasert fagsystem for mange virksomheter.">
+  <meta name="description" content="Erfaringer med sikkerhetsarkitektur, prompt injection og red teaming i et skybasert fagsystem bygget for mange virksomheter.">
   <meta name="author" content="Vegard Cowie Jørgensen">
   <link rel="canonical" href="https://vegardjorg.github.io/artikler/ki-assistent-med-brukerens-tilganger.html">
   <link rel="alternate" hreflang="nb" href="https://vegardjorg.github.io/artikler/ki-assistent-med-brukerens-tilganger.html">
@@ -12,13 +12,13 @@
   <link rel="alternate" hreflang="x-default" href="https://vegardjorg.github.io/artikler/ki-assistent-med-brukerens-tilganger.html">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Når KI-en bare får lov til det brukeren får lov til">
-  <meta property="og:description" content="Erfaringer med sikkerhetsarkitektur, prompt injection og red teaming i et skybasert fagsystem for mange virksomheter.">
+  <meta property="og:description" content="Erfaringer med sikkerhetsarkitektur, prompt injection og red teaming i et skybasert fagsystem bygget for mange virksomheter.">
   <meta property="og:url" content="https://vegardjorg.github.io/artikler/ki-assistent-med-brukerens-tilganger.html">
   <meta property="og:locale" content="nb_NO">
   <meta property="article:published_time" content="2026-11-27">
   <meta property="article:author" content="Vegard Cowie Jørgensen">
   <script type="application/ld+json">
-  {"@context": "https://schema.org", "@type": "Article", "headline": "Når KI-en bare får lov til det brukeren får lov til", "description": "Erfaringer med sikkerhetsarkitektur, prompt injection og red teaming i et skybasert fagsystem for mange virksomheter.",
+  {"@context": "https://schema.org", "@type": "Article", "headline": "Når KI-en bare får lov til det brukeren får lov til", "description": "Erfaringer med sikkerhetsarkitektur, prompt injection og red teaming i et skybasert fagsystem bygget for mange virksomheter.",
    "datePublished": "2026-11-27", "inLanguage": "nb", "mainEntityOfPage": "https://vegardjorg.github.io/artikler/ki-assistent-med-brukerens-tilganger.html",
    "image": "https://vegardjorg.github.io/assets/portrett.jpg",
    "author": {"@type": "Person", "name": "Vegard Cowie Jørgensen", "url": "https://vegardjorg.github.io/"}}
@@ -48,7 +48,7 @@
         <header class="art-head">
           <p class="mono-tag">Artikkel · Sikkerhetsarkitektur og KI</p>
           <h1>Når KI-en bare får lov til det brukeren får lov til</h1>
-          <p class="dek">Erfaringer med sikkerhetsarkitektur, prompt injection og red teaming i et skybasert fagsystem for mange virksomheter</p>
+          <p class="dek">Erfaringer med sikkerhetsarkitektur, prompt injection og red teaming i et skybasert fagsystem bygget for mange virksomheter</p>
           <div class="byline">
             <img src="../assets/portrett.jpg" width="52" height="52" alt="Portrett av Vegard Cowie Jørgensen">
             <div>
@@ -95,7 +95,7 @@
           </nav>
 
           <div class="art-body" id="tekst">
-            <p>En KI-assistent i et fagsystem ser fort ut som et lite under. Brukeren spør hva som er forfalt, hvor et dokument ligger, eller ber om hjelp til å fylle ut et skjema. Bak spørsmålene ligger saker, dokumenter og personalopplysninger, fordelt på mange virksomheter som deler samme system. For en utvikler er en personalsak en rad i en tabell. For den saken handler om, kan den inneholde noe hen aldri ville at en kollega skulle se.</p>
+            <p>En KI-assistent i et fagsystem ser fort ut som et lite under. Brukeren spør hva som er forfalt, hvor et dokument ligger, eller ber om hjelp til å fylle ut et skjema. Bak spørsmålene ligger saker, dokumenter og personalopplysninger, i et system som er bygget for at mange virksomheter skal dele det. For en utvikler er en personalsak en rad i en tabell. For den saken handler om, kan den inneholde noe hen aldri ville at en kollega skulle se.</p>
             <p>Det er et grunnleggende arkitekturproblem. I vanlig programvare kommer instruksene fra utviklerne, og data som blir til instrukser, som ved SQL-injeksjon, er en feil som kan rettes. En språkmodell kan styres av de samme dataene den skal behandle, fordi den ikke pålitelig skiller instrukser fra data, og likevel får assistenten slå opp i nettopp disse opplysningene. Antakelsen om at applikasjonens egne komponenter er til å stole på, holder ikke for en slik komponent.</p>
             <p>Her beskriver jeg hvordan jeg har bygget og testet en slik assistent: hvor jeg har lagt sikkerhetsgrensen, hvordan jeg lagdeler vernet mot prompt injection, og hvordan jeg prøver å få systemet til å svikte med vilje. Mye av det nyttigste jeg har lært, kom fra feil jeg fant i egne antakelser og i testene som skulle fange dem. All testing jeg beskriver, er gjort i et staging-miljø med fiktive data, og feilene ble funnet og rettet der, før de nådde produksjon.</p>
             <aside class="oppsummert" aria-labelledby="kort-oppsummert">
@@ -257,14 +257,14 @@
             <p>I et lokalt miljø kan testbrukere mangle virksomhetstilhørighet, og da nekter all tilgangskontroll trivielt, så testene ser rene ut uten å teste noe. Alt var grønt. Ingenting ble testet. De destruktive testene har en positiv kontroll som sjekker at det lovlige lykkes.</p>
             <p>En gang var et «kritisk» funn en feilkode som tilfeldigvis sto som sifre i et tidsstempel. Siden verifiserer jeg hvert kritisk funn før det behandles som ekte. Når svaret får en ny kanal, for eksempel en ny korttype, må lekkasjesjekken dekke den i samme endring.</p>
             <h2 id="personvern-og-ki-forordningen">Personvern og KI-forordningen</h2>
-            <p>KI-forordningen innføres trinnvis. I EU har forbudene i art. 5 gjeldt siden februar 2025, og transparenspliktene i art. 50 har gjeldt siden august 2026. Den norske gjennomføringen er under arbeid, og GDPR gjelder uansett. Jeg bygget etter transparenspliktene fra starten, fordi det var billig da og dyrt å ettermontere: assistenten sier tydelig at den er en KI, og skrivehandlinger har et menneske i løkka. Det siste er et produktvalg, ikke menneskelig tilsyn i forordningens forstand, som gjelder høyrisikosystemer.</p>
+            <p>Det som følger, er en utviklers lesning av reglene, og vurderingene bør kvalitetssikres av jurist. KI-forordningen innføres trinnvis. I EU har forbudene i art. 5 gjeldt siden februar 2025, og transparenspliktene i art. 50 har gjeldt siden august 2026. Den norske gjennomføringen er under arbeid, og GDPR gjelder uansett. Jeg bygget etter transparenspliktene fra starten, fordi det var billig da og dyrt å ettermontere: assistenten sier tydelig at den er en KI, og skrivehandlinger har et menneske i løkka. Det siste er et produktvalg, ikke menneskelig tilsyn i forordningens forstand, som gjelder høyrisikosystemer.</p>
             <p>Noen grenser er produktvalg som går lenger enn loven krever. KI skal ikke evaluere eller rangere enkeltansatte, og det gjøres ingen emosjons- eller sentimentanalyse av ansattes tale eller tekst. Assistenten skal hjelpe folk med jobben, ikke gjøre dem som gjør jobben, til enda en kilde til atferdsdata. Art. 5 forbyr følelsesgjenkjenning på arbeidsplassen, unntatt av medisinske eller sikkerhetsmessige grunner. Forordningen definerer det som slutninger fra biometriske data som ansikt eller stemme, så tekstanalyse faller utenfor, og den stiller strenge krav til mer av dette. Jeg har likevel valgt å holde hele området utenfor, også der det kunne vært lovlig med riktig dokumentasjon.</p>
             <p>At en bruker får lese personopplysninger, betyr ikke i seg selv at virksomheten kan behandle dem med en KI-tjeneste. Det krever eget formål og eget behandlingsgrunnlag. Menneskelig godkjenning dokumenterer heller ikke etterlevelse alene. Den tekniske delen må følges av underdatabehandlerkjede, behandlingsprotokoll og, der behandlingen kan innebære høy risiko, en konsekvensvurdering.</p>
             <h2 id="ikke-alt-trenger-en-sprakmodell">Ikke alt trenger en språkmodell</h2>
             <p>Et problem som kan beskrives med regler, løser jeg best uten modell: planlegging etter faste kriterier, beregninger, frister og en stemmestyrt registrering som tolker det brukeren sier steg for steg. En deterministisk løsning gir samme svar på samme input, har ingen kostnad per modellkall, er ikke utsatt for prompt injection og er lettere å teste. Da stemmestyringen ikke forsto brukerne godt nok, målte jeg hva de faktisk sa og gjorde tolkningen mer tolerant, i stedet for å legge inn en modell. Det tryggeste KI-kallet er det man ikke trenger å gjøre.</p>
             <h2 id="kontroller-som-fanger-neste-feil">Kontroller som fanger neste feil</h2>
-            <p>De fleste lærdommene gjør jeg om til automatiske kontroller. En tilgangsregel testes mot databasen der den håndheves, aldri mot en håndskrevet kopi i en testdobbel. Når jeg finner en feil, spør jeg hvordan neste feil av samme type blir rød. En manglende tilgangssjekk i én KI-funksjon, funnet i staging før produksjon, ble til en kontroll som krever sjekken i alle. For mønstre som ikke kan rettes på én gang, teller en kontroll antallet og godtar bare at det synker.</p>
-            <p>En sikkerhetstest regnes som ferdig først når jeg har sett den feile mot en bevisst ødelagt tilstand, og kontrollene i byggekjeden har selvtester med saboterte kopier. En test som prøver handlingen, veier tyngre enn en som leser kildeteksten etter et mønster. Før en ny sikkerhetskritisk flate tas i bruk, går en egen KI-agent med separat kontekst gjennom den, og den må bevise hvert funn med en test som feiler. Det gir en ny lesning av koden med egen kontekst, men erstatter ikke en ekstern, menneskelig sikkerhetsrevisjon.</p>
+            <p>De fleste lærdommene gjør jeg om til automatiske kontroller. Målet er at neste utvikler ikke trenger å huske dem, fordi byggekjeden sier fra. En tilgangsregel testes mot databasen der den håndheves, aldri mot en håndskrevet kopi i en testdobbel. Når jeg finner en feil, spør jeg hvordan neste feil av samme type blir rød. En manglende tilgangssjekk i én KI-funksjon, funnet i staging før produksjon, ble til en kontroll som krever sjekken i alle. For mønstre som ikke kan rettes på én gang, teller en kontroll antallet og godtar bare at det synker.</p>
+            <p>En sikkerhetstest regnes som ferdig først når jeg har sett den feile mot en bevisst ødelagt tilstand, og kontrollene i byggekjeden har selvtester med saboterte kopier. En test som prøver handlingen, veier tyngre enn en som leser kildeteksten etter et mønster. Før en ny sikkerhetskritisk flate tas i bruk, gjennomgås den separat, uten byggekontekst, og hvert funn må bevises med en test som feiler. Det gir en ny lesning av koden, men erstatter ikke en ekstern sikkerhetsrevisjon.</p>
             <p>Hver sikkerhetspåstand i denne teksten har jeg sjekket mot koden. At en logg mangler en kolonne for virksomheten, betyr ikke at den ikke kan kobles til en virksomhet, og «én inngang» må stemme for hvert eneste kall.</p>
             <h2 id="hva-arkitekturen-ikke-loser">Hva arkitekturen ikke løser</h2>
             <p>Arkitekturen flytter mye risiko fra modellen til kontroller som kan testes. Målet er ikke å hindre at modellen blir manipulert, men å begrense hva en manipulasjon kan føre til: autorisasjonen håndheves uavhengig av modellen. Om en handling er det brukeren ville, om svaret er riktig og hvor informasjonen kan gå videre, er egne problemer som arkitekturen bare delvis løser. Noe står derfor igjen i ethvert system som gir en språkmodell tilgang til virksomhetsdata.</p>
